@@ -39,4 +39,69 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    function submitBlacklist() {
+        var blacklist = blacklistInput.value.split(',').map(function(item) {return item.trim();});
+
+        chrome.storage.sync.get('blacklist', function(storage) {
+            if (storage.blacklist) {
+                var newBlacklist = storage.blacklist.slice();
+
+                if (Array.isArray(blacklist)) {
+                    newBlacklist = newBlacklist.concat(blacklist);
+                } else {
+                    newBlacklist.push(blacklist);
+                }
+
+                chrome.storage.sync.set({ 'blacklist': newBlacklist }, function() {
+                    console.log('Blacklist updated, new blacklist:');
+                    console.log(newBlacklist);
+                });
+            } 
+            else {
+                chrome.storage.sync.set({ 'blacklist': blacklist.split(',') }, function() {
+                    console.log('Blacklist set');
+                });
+            }
+
+            blacklistInput.value = '';
+        });
+    }
+    
+    blacklistInput = document.getElementById('blacklistInput');
+    blacklistSubmit = document.getElementById('blacklistSubmit');
+    clearBlacklist = document.getElementById('clearBlacklist');
+
+    blacklistSubmit.addEventListener('click', submitBlacklist);
+    blacklistInput.addEventListener('keydown', function(event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            submitBlacklist();
+        }
+    });
+
+    clearBlacklist.addEventListener('click', function() {
+        chrome.storage.sync.set({ 'blacklist': [] }, function() {
+            console.log('Blacklist cleared');
+        });
+    });
+
+    showBlacklist.addEventListener('click', function() {
+        chrome.storage.sync.get('blacklist', function(storage) {
+            if (storage.blacklist) {
+                console.log(storage.blacklist);
+                alert(storage.blacklist.join('\n'));
+            } else {
+                alert('Blacklist is empty');
+            }
+        });
+    });
+
+    const infoIcon = document.getElementById('infoIcon');
+    const infoText = document.getElementById('infoText');
+    
+    infoIcon.addEventListener('click', () => {
+        alert(infoText.textContent);
+    });
 });
+
