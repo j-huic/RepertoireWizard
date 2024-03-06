@@ -8,18 +8,18 @@
         "48": "icon48.png",
         "16": "icon16.png"
     },
-    "page_action": {
+    "action": {
         "default_icon": "icon16.png",
-        "default_popup": "popup.htl",
+        "default_popup": "popup.html",
         "default_title": ""
     },
-
     "options_page": "options.html",
-    
+    "background": {
+        "service_worker": "background.js"
+      },    
     "permissions": [
         "storage"
     ],
-
     "content_scripts": [
         {
             "matches": ["https://www.chessable.com/*"],
