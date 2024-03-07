@@ -1,17 +1,21 @@
 console.log("background script running");
 
-// Listen for messages from the content script
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    console.log("got a message")
   if (request.method == "getOptions") {
-    console.log("trying to get storage");
     options = ['removeNotifs', 'extraDropdown'];
     chrome.storage.sync.get(options, function(items) {
         console.log(items);
         sendResponse(items);
     });
   }
-  return true; // Required to keep the message channel open until sendResponse is called
+
+  else if (request.method == "getBlacklist") {
+    chrome.storage.sync.get('blacklist', function(item) {
+      console.log(item);
+        sendResponse(item);
+    });
+}
+  return true; 
 });
 
 console.log("background script running");
