@@ -14,8 +14,15 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       console.log(item);
         sendResponse(item);
     });
-}
-  return true; 
+  }
+
+  else if (request.method == "getCategories"){
+    chrome.storage.sync.get('categories', function(item){
+      console.log(item);
+      sendResponse(item);
+    });
+    
+  }  return true; 
 });
 
 console.log("background script running");
