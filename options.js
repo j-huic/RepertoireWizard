@@ -99,9 +99,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const infoIcon = document.getElementById('infoIcon');
     const infoText = document.getElementById('infoText');
+    const infoIconCat = document.getElementById('infoIconCat');
+    const infoTextCat = document.getElementById('infoTextCat');
     
     infoIcon.addEventListener('click', () => {
         alert(infoText.textContent);
+    });
+    infoIconCat.addEventListener('click', () => {
+        alert(infoTextCat.textContent);
     });
 });
 

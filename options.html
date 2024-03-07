@@ -14,7 +14,7 @@
             <input type="checkbox" id="extraDropdownCheckbox" name="checkbox">
             <label for="extraDropdownCheckbox">Add Additional Dropdown Menu</label>
         </div>
-        <div>
+
             <br>
         </div>
             <label for="blacklistInput">Filter Courses From the Dropdown</label>
@@ -28,6 +28,20 @@
                 Enter separately or separate by commas.
             </div>
         </div>
+        <br>
+        <br>
+        <div>
+            <label for="categories">Organize Courses by Category</label>
+            <input type="text" id="categories" name="categories">
+            <input type="submit" id="categoriesSubmit" value="Submit">
+            <input type="submit" id="clearCategories" value="Clear Categories">
+            <img src="icon16.png" alt="Info" id="infoIconCat">
+            <div id="infoTextCat" style="display: none;">
+                Add dictionary with categories for keys and array of whitelisted words.
+                E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
+            </div>
+        </div>
+              
 
     </body>
 </html>
