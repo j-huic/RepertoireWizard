@@ -57,8 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         return mergedDict;
     }
-
-    function submitBlacklist() {
+    function submitBlacklist2() {
         if (blacklistInput.value === '') {
             return;
         }
@@ -88,8 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
             blacklistInput.value = '';
         });
     }
-    
-    function submitCategories() {
+    function submitCategories2() {
         chrome.storage.sync.get('categories', function(storage) {
             input = jsonObject = JSON.parse(categoriesInput.value);
             console.log(typeof input)
@@ -114,6 +112,35 @@ document.addEventListener('DOMContentLoaded', function() {
             categoriesInput.value = '';
         });
     }
+    function submitBlacklist() {
+        blacklistInput.style.height = 'auto';
+        blacklistInput.style.height = (blacklistInput.scrollHeight) + 'px';
+        
+        if (blacklistInput.value === '') {
+            return;
+        }
+        var blacklist = blacklistInput.value.split(',').map(function(item) {return item.trim();});
+        var blacklist = [...new Set(blacklist)];
+        console.log(blacklist);
+        chrome.storage.sync.set({ 'blacklist': blacklist }, function() {
+            blacklistInput.value = blacklist;
+            console.log('Blacklist set');
+        });
+    }
+    function submitCategories() {
+        categoriesInput.style.height = 'auto';
+        categoriesInput.style.height = (categoriesInput.scrollHeight) + 'px'
+        input = jsonObject = JSON.parse(categoriesInput.value);
+        console.log(typeof input)
+        if (typeof input === 'object' && Object.keys(input).length > 0){
+            var newCategories = input;
+        }
+        else return;
+
+        chrome.storage.sync.set({ 'categories': newCategories }, function() {   
+        });
+        
+    }
 
     blacklistInput = document.getElementById('blacklistInput');
     blacklistSubmit = document.getElementById('blacklistSubmit');
@@ -122,6 +149,16 @@ document.addEventListener('DOMContentLoaded', function() {
     categoriesInput = document.getElementById('categoriesInput');
     categoriesSubmit = document.getElementById('categoriesSubmit');
     clearCategories = document.getElementById('clearCategories');
+
+    chrome.storage.sync.get({blacklist:'', categories:''}, function(storage) {
+        blacklistInput.value = storage.blacklist;
+        blacklistInput.style.height = 'auto';
+        blacklistInput.style.height = (blacklistInput.scrollHeight) + 'px';
+
+        categoriesInput.value = JSON.stringify(storage.categories, null, 2);
+        categoriesInput.style.height = 'auto';
+        categoriesInput.style.height = (categoriesInput.scrollHeight) + 'px';
+    });
 
     blacklistSubmit.addEventListener('click', submitBlacklist);
     blacklistInput.addEventListener('keydown', function(event) {
@@ -140,6 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     clearBlacklist.addEventListener('click', function() {
         chrome.storage.sync.set({ 'blacklist': [] }, function() {
+            blacklistInput.value = '';
             console.log('Blacklist cleared');
         });
     });
