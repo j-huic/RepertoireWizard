@@ -1,9 +1,11 @@
-fetch('https://www.chessable.com/ajax/nextMoves.php?next=rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR%20w%20KQkq%20-%200%201&rep=47519', {
+fenfetch = function(FEN){
+    path = fentopath(FEN);
+    fetch('https://www.chessable.com'+path, {
     method: 'GET',
     headers: {
         authority : 'www.chessable.com',
         method : 'GET',
-        path : '/ajax/nextMoves.php?next=rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR%20w%20KQkq%20-%200%201&rep=47519',
+        path : path,
         scheme : 'https',
         Accept : '*/*',
         'Accept-encoding' : 'gzip, deflate, br, zstd',
@@ -23,4 +25,8 @@ fetch('https://www.chessable.com/ajax/nextMoves.php?next=rnbqkbnr/pppppppp/8/8/8
 })
 .then(response => response.json())
 .then(data => console.log(data))
-.catch(error => console.error('Error:', error));
+.catch(error => console.error('Error:', error));}
+
+fentopath = function(FEN, rep=47519){
+    return '/ajax/nextMoves.php?next=' + FEN.replace(/\s/g, '%20') + '&rep=' + rep;
+}
