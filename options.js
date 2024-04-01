@@ -1,19 +1,19 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-    chrome.storage.sync.get(['removeNotifs', 'extraDropdown'], function(options) {
+/*     chrome.storage.sync.get(['removeNotifs', 'extraDropdown'], function(options) {
         console.log(options);
         if (options.removeNotifs) {
-            document.getElementById('notifs').checked = true;
+            document.getElementById('Removenotifs').checked = true;
         }
         if (options.extraDropdown) {
             document.getElementById('extraDropdownCheckbox').checked = true;
         }
-    });
+    }); */
 
     const notifsCheckbox = document.getElementById('notifs');
     const dropdownCheckbox = document.getElementById('extraDropdownCheckbox');
 
-    notifsCheckbox.addEventListener('change', function() {
+  /*   notifsCheckbox.addEventListener('change', function() {
         if (notifsCheckbox.checked) {
             chrome.storage.sync.set({ 'removeNotifs': true }, function() {
                 console.log('Option checked and saved to chrome storage');
@@ -35,7 +35,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Option unchecked and saved to chrome storage');
             });
         }
-    });
+    }); */
+
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        chrome.storage.sync.get(
+            ['removeNotifs', 'extraDropdown', 'filterToggle', 'categoriesToggle'], 
+            function(options) {
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = options[checkbox.id];
+                });
+            });
+        
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function(event) {
+                let obj = {};
+                obj[event.target.id] = event.target.checked;
+                chrome.storage.sync.set(obj, function() {
+                    console.log(`Option ${event.target.id} set to ${event.target.checked} and saved to chrome storage`);
+                });
+            });
+        });
 
     function mergeDicts(dict1, dict2) {
         var mergedDict = {};

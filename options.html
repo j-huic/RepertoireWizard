@@ -7,12 +7,20 @@
     <body>
         <h1>Options</h1>
         <div>
-            <input type="checkbox" id="notifs" name="checkbox">
-            <label for="notifs">Hide Notification Alert</label>
+            <input type="checkbox" id="removeNotifs" name="checkbox">
+            <label for="removeNotifs">Hide Notification Alert</label>
         </div>
         <div>
-            <input type="checkbox" id="extraDropdownCheckbox" name="checkbox">
-            <label for="extraDropdownCheckbox">Add Additional Dropdown Menu</label>
+            <input type="checkbox" id="extraDropdown" name="checkbox">
+            <label for="extraDropdown">Add Additional Dropdown Menu</label>
+        </div>
+        <div>
+            <input type="checkbox" id="filterToggle" name="checkbox">
+            <label for="filterToggle">Toggle Course Filtering</label>
+        </div>
+        <div>
+            <input type="checkbox" id="categoriesToggle" name="checkbox">
+            <label for="categoriesToggle">Toggle Categorisation</label>
         </div>
 
             <br>
@@ -42,7 +50,11 @@
                 E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
             </div>
         </div>
-              
+        <div>
+            <label for="fetch">Enter Text:</label>
+            <input type="text" id="fetch" name="textInput">
+            <button id="submitButton">Submit</button>
+        </div>
 
     </body>
 </html>

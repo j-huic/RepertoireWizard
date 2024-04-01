@@ -1,5 +1,4 @@
 chrome.runtime.sendMessage({method: "getOptions"}, function(response) {
-    console.log("sending storage request");
 
     removeNotifs = response.removeNotifs;
 

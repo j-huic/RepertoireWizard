@@ -2,7 +2,7 @@ console.log("background script running");
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.method == "getOptions") {
-    options = ['removeNotifs', 'extraDropdown'];
+    options = ['removeNotifs', 'extraDropdown', 'filterToggle', 'categoriesToggle'];
     chrome.storage.sync.get(options, function(items) {
         console.log(items);
         sendResponse(items);
@@ -10,16 +10,18 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   }
 
   else if (request.method == "getBlacklist") {
-    chrome.storage.sync.get('blacklist', function(item) {
-      console.log(item);
-        sendResponse(item);
+    console.log('background reached')
+    chrome.storage.sync.get(['blacklist', 'filterToggle'], function(item) {
+      console.log(item)
+        if (item.filterToggle) sendResponse(item);
+        else sendResponse(false);
     });
   }
 
   else if (request.method == "getCategories"){
-    chrome.storage.sync.get('categories', function(item){
-      console.log(item);
-      sendResponse(item);
+    chrome.storage.sync.get(['categories', 'categoriesToggle'], function(item){
+      if (item.categoriesToggle) sendResponse(item);
+      else sendResponse(false);
     });
     
   }  return true; 

@@ -9,10 +9,10 @@ var callback = function(mutationsList, observer) {
                     var itemslength = items.length;
 
                     chrome.runtime.sendMessage({method: "getBlacklist"}, function(response) {
-                        console.log("sending storage request");
+                        console.log("sending storage request for blacklist");
+                        console.log(response);
                         if (response.blacklist){
-                            console.log("blacklist received");
-                            console.log(response.blacklist);     
+                            console.log("blacklist received");   
                     
                             
                             var blacklistlength = response.blacklist.length;
@@ -43,10 +43,10 @@ var callback = function(mutationsList, observer) {
                             dropdown.appendChild(optgroup);
                             for (var i = items.length - 1; i >= 0; i--) {
                                 for (let j = 0; j < response.categories[categories[k]].length; j++) {
-                                    console.log(items[i].innerText)
-                                    console.log(response.categories[categories[k]][j])
+/*                                     console.log(items[i].innerText)
+                                    console.log(response.categories[categories[k]][j]) */
                                     if (items[i].innerText.toLowerCase().includes(response.categories[categories[k]][j].toLowerCase())) {
-                                        console.log("adding " + items[i].innerText + " to " + categories[k]);
+                                        //console.log("adding " + items[i].innerText + " to " + categories[k]);
                                         optgroup.appendChild(items[i]);
                                         break;
                                     }
