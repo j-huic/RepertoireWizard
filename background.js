@@ -2,7 +2,7 @@ console.log("background script running");
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.method == "getOptions") {
-    options = ['removeNotifs', 'extraDropdown', 'filterToggle', 'categoriesToggle'];
+    options = ['removeNotifs', 'extraDropdown', 'filterToggle', 'categoriesToggle', 'rename'];
     chrome.storage.sync.get(options, function(items) {
         console.log(items);
         sendResponse(items);
@@ -19,12 +19,13 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   }
 
   else if (request.method == "getCategories"){
-    chrome.storage.sync.get(['categories', 'categoriesToggle'], function(item){
+    chrome.storage.sync.get(['categories', 'categoriesToggle', 'rename'], function(item){
       if (item.categoriesToggle) sendResponse(item);
       else sendResponse(false);
     });
     
   }  return true; 
+  
 });
 
 console.log("background script running");

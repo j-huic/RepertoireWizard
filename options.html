@@ -50,6 +50,21 @@
                 E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
             </div>
         </div>
+        <br>
+        <br>
+        <div>
+            <label for="rename">Rename Courses</label>
+            <textarea rows="1" cols="20" id="renameInput" name="renameInput" wrap="hard"></textarea>
+            <input type="submit" id="renameSubmit" value="Submit">
+            <input type="submit" id="cleaRrename" value="Clear Rename">
+            <input type="submit" id="showRename" value="Show Rename">
+            <img src="icon16.png" alt="Info" id="infoIconRename">
+            <div id="infoTextRename" style="display: none;">
+                Rename courses by adding dictionary with original course name as key and new name as value.
+                E.g. {"Lifetime Repertoires: Sam Shankland's d4 - Part 1": "Shanland d4 - QGA/Slav"}
+            </div>
+        </div>
+
         <div>
             <label for="fetch">Enter Text:</label>
             <input type="text" id="fetch" name="textInput">

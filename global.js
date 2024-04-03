@@ -8,3 +8,6 @@ chrome.runtime.sendMessage({method: "getOptions"}, function(response) {
         notificationsNumber.parentNode.removeChild(notificationsNumber);
     }}
   });
+
+console.log("global script running");
+// fenfetch()

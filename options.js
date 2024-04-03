@@ -1,42 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-
-/*     chrome.storage.sync.get(['removeNotifs', 'extraDropdown'], function(options) {
-        console.log(options);
-        if (options.removeNotifs) {
-            document.getElementById('Removenotifs').checked = true;
-        }
-        if (options.extraDropdown) {
-            document.getElementById('extraDropdownCheckbox').checked = true;
-        }
-    }); */
-
-    const notifsCheckbox = document.getElementById('notifs');
-    const dropdownCheckbox = document.getElementById('extraDropdownCheckbox');
-
-  /*   notifsCheckbox.addEventListener('change', function() {
-        if (notifsCheckbox.checked) {
-            chrome.storage.sync.set({ 'removeNotifs': true }, function() {
-                console.log('Option checked and saved to chrome storage');
-            });
-        } else {
-            chrome.storage.sync.set({ 'removeNotifs': false }, function() {
-                console.log('Option unchecked and saved to chrome storage');
-            });
-        }
-    });
-
-    dropdownCheckbox.addEventListener('change', function() {
-        if (dropdownCheckbox.checked) {
-            chrome.storage.sync.set({ 'extraDropdown': true }, function() {
-                console.log('Option checked and saved to chrome storage');
-            });
-        } else {
-            chrome.storage.sync.set({ 'extraDropdown': false }, function() {
-                console.log('Option unchecked and saved to chrome storage');
-            });
-        }
-    }); */
-
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
         chrome.storage.sync.get(
             ['removeNotifs', 'extraDropdown', 'filterToggle', 'categoriesToggle'], 
@@ -76,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         return mergedDict;
     }
+
     function submitBlacklist2() {
         if (blacklistInput.value === '') {
             return;
@@ -131,6 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
             categoriesInput.value = '';
         });
     }
+
     function submitBlacklist() {
         blacklistInput.style.height = 'auto';
         blacklistInput.style.height = (blacklistInput.scrollHeight) + 'px';
@@ -138,29 +102,47 @@ document.addEventListener('DOMContentLoaded', function() {
         if (blacklistInput.value === '') {
             return;
         }
+
         var blacklist = blacklistInput.value.split(',').map(function(item) {return item.trim();});
         var blacklist = [...new Set(blacklist)];
         console.log(blacklist);
-        chrome.storage.sync.set({ 'blacklist': blacklist }, function() {
-            blacklistInput.value = blacklist;
-            console.log('Blacklist set');
-        });
+        chrome.storage.sync.set({ 'blacklist': blacklist }, function() {});
     }
+
     function submitCategories() {
         categoriesInput.style.height = 'auto';
         categoriesInput.style.height = (categoriesInput.scrollHeight) + 'px'
-        input = jsonObject = JSON.parse(categoriesInput.value);
-        console.log(typeof input)
+        var value = categoriesInput.value;
+
+        if (value === '') {input = {};}
+        else {input = JSON.parse(value);}
+
         if (typeof input === 'object' && Object.keys(input).length > 0){
             var newCategories = input;
         }
         else return;
 
-        chrome.storage.sync.set({ 'categories': newCategories }, function() {   
-        });
-        
+        chrome.storage.sync.set({ 'categories': newCategories }, function() {});
     }
 
+    function submitRename() {
+        renameInput.style.height = 'auto';
+        renameInput.style.height = (renameInput.scrollHeight) + 'px'
+        var value = renameInput.value;
+
+        if (value === '') {input = {};}
+        else {input = JSON.parse(value);}
+
+        if (typeof input === 'object'){
+            var newRename = input;
+        }
+        else return;
+
+        chrome.storage.sync.set({ 'rename': newRename }, function(stuff) {
+            console.log(stuff)
+        });
+    }
+    
     blacklistInput = document.getElementById('blacklistInput');
     blacklistSubmit = document.getElementById('blacklistSubmit');
     clearBlacklist = document.getElementById('clearBlacklist');
@@ -169,7 +151,10 @@ document.addEventListener('DOMContentLoaded', function() {
     categoriesSubmit = document.getElementById('categoriesSubmit');
     clearCategories = document.getElementById('clearCategories');
 
-    chrome.storage.sync.get({blacklist:'', categories:''}, function(storage) {
+    renameInput = document.getElementById('renameInput');
+    renameSubmit = document.getElementById('renameSubmit');
+
+    chrome.storage.sync.get(['blacklist', 'categories', 'rename'], function(storage) {
         blacklistInput.value = storage.blacklist;
         blacklistInput.style.height = 'auto';
         blacklistInput.style.height = (blacklistInput.scrollHeight) + 'px';
@@ -177,6 +162,10 @@ document.addEventListener('DOMContentLoaded', function() {
         categoriesInput.value = JSON.stringify(storage.categories, null, 2);
         categoriesInput.style.height = 'auto';
         categoriesInput.style.height = (categoriesInput.scrollHeight) + 'px';
+
+        renameInput.value = JSON.stringify(storage.rename, null, 2);
+        renameInput.style.height = 'auto';
+        renameInput.style.height = (renameInput.scrollHeight) + 'px';
     });
 
     blacklistSubmit.addEventListener('click', submitBlacklist);
@@ -186,11 +175,20 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBlacklist();
         }
     });
+
     categoriesSubmit.addEventListener('click', submitCategories);
     categoriesInput.addEventListener('keydown', function(event) {
         if (event.keyCode === 13) {
             event.preventDefault();
             submitCategories();
+        }
+    });
+
+    renameSubmit.addEventListener('click', submitRename);
+    renameInput.addEventListener('keydown', function(event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            submitRename();
         }
     });
 
@@ -202,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     clearCategories.addEventListener('click', function() {
         chrome.storage.sync.set({ 'categories': {} }, function() {
-            console.log('categories cleared');
+            console.log('Categories cleared');
         });
     });
 
@@ -231,12 +229,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const infoText = document.getElementById('infoText');
     const infoIconCat = document.getElementById('infoIconCat');
     const infoTextCat = document.getElementById('infoTextCat');
+    const infoIconRename = document.getElementById('infoIconRename');
+    const infoTextRename = document.getElementById('infoTextRename');
     
     infoIcon.addEventListener('click', () => {
         alert(infoText.textContent);
     });
     infoIconCat.addEventListener('click', () => {
         alert(infoTextCat.textContent);
+    });
+    infoIconRename.addEventListener('click', () => {
+        chrome.storage.sync.get('rename', function(storage) {
+            console.log(storage.rename);
+        });
+        //alert(infoTextRename.textContent);
     });
 });
 

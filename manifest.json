@@ -24,7 +24,7 @@
     "content_scripts": [
         {
             "matches": ["https://www.chessable.com/*"],
-            "js": ["global.js"]
+            "js": ["fetch.js", "global.js"]
         },
         {
             "matches": ["https://www.chessable.com/explore/*"],
@@ -33,6 +33,10 @@
         {
             "matches": ["https://www.chessable.com/explore/*"],
             "js": ["filter.js"]
+        },
+        {
+            "matches": ["https://lichess.org/analysis"],
+            "js": ["fetch.js", "lichess.js"]
         }
     ]
 }
