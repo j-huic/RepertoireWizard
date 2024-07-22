@@ -1,0 +1,38 @@
+extension options
+
+FILTER: 
+
+my,endgame,free,e5,tutorial,short
+
+ORGANIZE:
+
+{
+  "BLACK": [
+    "nimzo",
+    "e5",
+    "king's"
+  ],
+  "WHITE": [
+    "d4",
+    "catalan",
+    "neo",
+    "thing",
+    "one",
+    "two",
+    "three"
+  ]
+}
+
+RENAME:
+
+{
+  "King's Kalashnikov Sicilian": "Kalashnikov",
+  "King's anti-sicilians": "Anti-Sicilians",
+  "Lifetime Repertoires: Sam Shankland's 1. d4 - Part 1": "Shankland - Sidelines",
+  "Lifetime Repertoires: Sam Shankland's 1. d4 - Part 2": "Shankland - Indians/Grun",
+  "Lifetime Repertoires: Sam Shankland's 1. d4 - Part 3": "Shankland - QGD/Slav",
+  "lifetime repertoires: neo-catalan - part 1": "Neo-Catalan",
+  "lifetime repertoires: nimzo/semi-tarrasch - part 1": "Nimzo 1",
+  "lifetime repertoires: nimzo/semi-tarrasch - part 2": "Nimzo 2",
+  "lifetime repertoires: srinath's catalan": "Catalan"
+}
