@@ -42,7 +42,9 @@ var callback = function(mutationsList, observer) {
                             }
                         }
 
+                        console.log('renaming called 1');
                         rename();
+                        console.log('renaming called 2');
                     });
 
                     

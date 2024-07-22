@@ -137,10 +137,8 @@ document.addEventListener('DOMContentLoaded', function() {
             var newRename = input;
         }
         else return;
-
-        chrome.storage.sync.set({ 'rename': newRename }, function(stuff) {
-            console.log(stuff)
-        });
+        
+        chrome.storage.sync.set({ 'rename': newRename }, function() {});
     }
     
     blacklistInput = document.getElementById('blacklistInput');
