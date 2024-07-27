@@ -33,10 +33,6 @@
         {
             "matches": ["https://www.chessable.com/explore/*"],
             "js": ["filter.js"]
-        },
-        {
-            "matches": ["https://lichess.org/analysis"],
-            "js": ["fetch.js", "lichess.js"]
         }
     ]
 }
