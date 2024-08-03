@@ -10,13 +10,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       "rename",
     ];
     chrome.storage.sync.get(options, function (items) {
-      console.log(items);
       sendResponse(items);
     });
   } else if (request.method == "getBlacklist") {
-    console.log("background reached");
     chrome.storage.sync.get(["blacklist", "filterToggle"], function (item) {
-      console.log(item);
       if (item.filterToggle) sendResponse(item);
       else sendResponse(false);
     });
@@ -31,5 +28,3 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
   return true;
 });
-
-console.log("background script running");
