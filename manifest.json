@@ -30,6 +30,11 @@
     {
       "matches": ["https://www.chessable.com/explore/*"],
       "js": ["filter.js"]
+    },
+    {
+      "matches": ["https://www.chessable.com/analysis/*"],
+      "js": ["analysisScript.js"],
+      "run_at": "document_start"
     }
   ]
 }
