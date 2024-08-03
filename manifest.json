@@ -1,38 +1,35 @@
 {
-    "manifest_version": 3,
-    "name": "Repertoire Helper",
-    "version": "1.0",
-    "description": "Adds functionality to the chessable tree explorer and lichess",
-    "icons": {
-        "128": "icon128.png",
-        "48": "icon48.png",
-        "16": "icon16.png"
+  "manifest_version": 3,
+  "name": "Repertoire Helper",
+  "version": "1.0",
+  "description": "Adds functionality to the chessable tree explorer and lichess",
+  "icons": {
+    "128": "icon128.png",
+    "48": "icon48.png",
+    "16": "icon16.png"
+  },
+  "action": {
+    "default_icon": "icon16.png",
+    "default_popup": "popup.html",
+    "default_title": ""
+  },
+  "options_page": "options.html",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage", "activeTab"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.chessable.com/*"],
+      "js": ["fetch.js", "global.js"]
     },
-    "action": {
-        "default_icon": "icon16.png",
-        "default_popup": "popup.html",
-        "default_title": ""
+    {
+      "matches": ["https://www.chessable.com/explore/*"],
+      "js": ["contentScript.js"]
     },
-    "options_page": "options.html",
-    "background": {
-        "service_worker": "background.js"
-      },    
-    "permissions": [
-        "storage",
-        "activeTab"
-    ],
-    "content_scripts": [
-        {
-            "matches": ["https://www.chessable.com/*"],
-            "js": ["fetch.js", "global.js"]
-        },
-        {
-            "matches": ["https://www.chessable.com/explore/*"],
-            "js": ["contentScript.js"]
-        },
-        {
-            "matches": ["https://www.chessable.com/explore/*"],
-            "js": ["filter.js"]
-        }
-    ]
+    {
+      "matches": ["https://www.chessable.com/explore/*"],
+      "js": ["filter.js"]
+    }
+  ]
 }

@@ -1,13 +1,13 @@
-chrome.runtime.sendMessage({method: "getOptions"}, function(response) {
+chrome.runtime.sendMessage({ method: "getOptions" }, function (response) {
+  removeNotifs = response.removeNotifs;
 
-    removeNotifs = response.removeNotifs;
-
-    if (removeNotifs){
-        var notificationsNumber = document.getElementById("notificationsNumber");
+  if (removeNotifs) {
+    var notificationsNumber = document.getElementById("notificationsNumber");
     if (notificationsNumber) {
-        notificationsNumber.parentNode.removeChild(notificationsNumber);
-    }}
-  });
+      notificationsNumber.parentNode.removeChild(notificationsNumber);
+    }
+  }
+});
 
 console.log("global script running");
 // fenfetch()
