@@ -1,75 +1,91 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <script src="options.js">
-        </script>
-    </head>
-    <body>
-        <h1>Options</h1>
-        <div>
-            <input type="checkbox" id="removeNotifs" name="checkbox">
-            <label for="removeNotifs">Hide Notification Alert</label>
-        </div>
-        <div>
-            <input type="checkbox" id="extraDropdown" name="checkbox">
-            <label for="extraDropdown">Add Additional Dropdown Menu</label>
-        </div>
-        <div>
-            <input type="checkbox" id="filterToggle" name="checkbox">
-            <label for="filterToggle">Toggle Course Filtering</label>
-        </div>
-        <div>
-            <input type="checkbox" id="categoriesToggle" name="checkbox">
-            <label for="categoriesToggle">Toggle Categorisation</label>
-        </div>
+  <head>
+    <script src="options.js"></script>
+  </head>
+  <body>
+    <h1>Options</h1>
+    <div>
+      <input type="checkbox" id="removeNotifs" name="checkbox" />
+      <label for="removeNotifs">Hide Notification Alert</label>
+    </div>
+    <div>
+      <input type="checkbox" id="extraDropdown" name="checkbox" />
+      <label for="extraDropdown">Add Additional Dropdown Menu</label>
+    </div>
+    <div>
+      <input type="checkbox" id="filterToggle" name="checkbox" />
+      <label for="filterToggle">Toggle Course Filtering</label>
+    </div>
+    <div>
+      <input type="checkbox" id="categoriesToggle" name="checkbox" />
+      <label for="categoriesToggle">Toggle Categorisation</label>
+    </div>
 
-            <br>
-        </div>
-            <label for="blacklistInput">Filter Courses From the Dropdown</label>
-            <textarea rows="1" cols="20" id="blacklistInput" name="blacklistInput"></textarea>
-            <input type="submit" id="blacklistSubmit" value="Submit">
-            <input type="submit" id="clearBlacklist" value="Clear Blacklist">
-            <input type="submit" id="showBlacklist" value="Show Blacklist">
-            <img src="icon16.png" alt="Info" id="infoIcon">
-            <div id="infoText" style="display: none;">
-                Add blacklisted keywords to filter out unwanted courses.
-                Enter separately or separate by commas.
-            </div>
-        </div>
-        <br>
-        <br>
-        <div>
-            <label for="categoriesInput">Organize Courses by Category</label>
-            <textarea rows="1" cols="20" id="categoriesInput" name="categoriesInput" wrap="hard"></textarea>
-            <input type="submit" id="categoriesSubmit" value="Submit">
-            <input type="submit" id="clearCategories" value="Clear Categories">
-            <input type="submit" id="showCategories" value="Show Categories">
-            <img src="icon16.png" alt="Info" id="infoIconCat">
-            <div id="infoTextCat" style="display: none;">
-                Add dictionary with categories for keys and array of whitelisted words.
-                E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
-            </div>
-        </div>
-        <br>
-        <br>
-        <div>
-            <label for="renameInput">Rename Courses</label>
-            <textarea rows="1" cols="20" id="renameInput" name="renameInput" wrap="soft"></textarea>
-            <input type="submit" id="renameSubmit" value="Submit">
-            <input type="submit" id="cleaRrename" value="Clear Rename">
-            <input type="submit" id="showRename" value="Show Rename">
-            <img src="icon16.png" alt="Info" id="infoIconRename">
-            <div id="infoTextRename" style="display: none;">
-                Rename courses by adding dictionary with original course name as key and new name as value.
-                E.g. {"Lifetime Repertoires: Sam Shankland's d4 - Part 1": "Shanland d4 - QGA/Slav"}
-            </div>
-        </div>
+    <br />
 
-        <div>
-            <label for="fetch">Enter Text:</label>
-            <input type="text" id="fetch" name="textInput">
-            <button id="submitButton">Submit</button>
-        </div>
+    <label for="blacklistInput">Filter Courses From the Dropdown</label>
+    <textarea
+      rows="1"
+      cols="20"
+      id="blacklistInput"
+      name="blacklistInput"
+    ></textarea>
+    <input type="submit" id="blacklistSubmit" value="Submit" />
+    <input type="submit" id="clearBlacklist" value="Clear Blacklist" />
+    <input type="submit" id="showBlacklist" value="Show Blacklist" />
+    <img src="icon16.png" alt="Info" id="infoIcon" />
+    <div id="infoText" style="display: none">
+      Add blacklisted keywords to filter out unwanted courses. Enter separately
+      or separate by commas.
+    </div>
 
-    </body>
+    <br />
+    <br />
+    <div>
+      <label for="categoriesInput">Organize Courses by Category</label>
+      <textarea
+        rows="1"
+        cols="20"
+        id="categoriesInput"
+        name="categoriesInput"
+        wrap="hard"
+      ></textarea>
+      <input type="submit" id="categoriesSubmit" value="Submit" />
+      <input type="submit" id="clearCategories" value="Clear Categories" />
+      <input type="submit" id="showCategories" value="Show Categories" />
+      <img src="icon16.png" alt="Info" id="infoIconCat" />
+      <div id="infoTextCat" style="display: none">
+        Add dictionary with categories for keys and array of whitelisted words.
+        E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
+      </div>
+    </div>
+    <br />
+    <br />
+    <div>
+      <label for="renameInput">Rename Courses</label>
+      <textarea
+        rows="1"
+        cols="20"
+        id="renameInput"
+        name="renameInput"
+        wrap="soft"
+      ></textarea>
+      <input type="submit" id="renameSubmit" value="Submit" />
+      <input type="submit" id="cleaRrename" value="Clear Rename" />
+      <input type="submit" id="showRename" value="Show Rename" />
+      <img src="icon16.png" alt="Info" id="infoIconRename" />
+      <div id="infoTextRename" style="display: none">
+        Rename courses by adding dictionary with original course name as key and
+        new name as value. E.g. {"Lifetime Repertoires: Sam Shankland's d4 -
+        Part 1": "Shanland d4 - QGA/Slav"}
+      </div>
+    </div>
+
+    <div>
+      <label for="fetch">Enter Text:</label>
+      <input type="text" id="fetch" name="textInput" />
+      <button id="submitButton">Submit</button>
+    </div>
+  </body>
 </html>
