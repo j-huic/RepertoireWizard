@@ -39,62 +39,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return mergedDict;
     }
 
-    function submitBlacklist2() {
-        if (blacklistInput.value === '') {
-            return;
-        }
-        var blacklist = blacklistInput.value.split(',').map(function(item) {return item.trim();});
-
-        chrome.storage.sync.get('blacklist', function(storage) {
-            if (storage.blacklist) {
-                var newBlacklist = storage.blacklist.slice();
-
-                if (Array.isArray(blacklist)) {
-                    newBlacklist = newBlacklist.concat(blacklist);
-                } else {
-                    newBlacklist.push(blacklist);
-                }
-
-                chrome.storage.sync.set({ 'blacklist': newBlacklist }, function() {
-                    console.log('Blacklist updated, new blacklist:');
-                    console.log(newBlacklist);
-                });
-            } 
-            else {
-                chrome.storage.sync.set({ 'blacklist': blacklist.split(',') }, function() {
-                    console.log('Blacklist set');
-                });
-            }
-
-            blacklistInput.value = '';
-        });
-    }
-    function submitCategories2() {
-        chrome.storage.sync.get('categories', function(storage) {
-            input = jsonObject = JSON.parse(categoriesInput.value);
-            console.log(typeof input)
-            if (typeof input === 'object' && Object.keys(input).length > 0){
-                var newCategories = mergeDicts(storage.categories, input);
-            }
-            else return;
-
-            if (storage.categories) {
-                chrome.storage.sync.set({ 'categories': newCategories }, function() {
-                    console.log('categories updated, new categories:');
-                    console.log(newCategories);
-                });
-            } 
-            else {
-                chrome.storage.sync.set({ 'categories': newCategories }, function() {
-                    console.log('categories set');
-                    console.log('categories updated, new categories:');
-                    console.log(newCategories);
-                });
-            }
-            categoriesInput.value = '';
-        });
-    }
-
     function submitBlacklist() {
         blacklistInput.style.height = 'auto';
         blacklistInput.style.height = (blacklistInput.scrollHeight) + 'px';
@@ -112,13 +56,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function submitCategories() {
         categoriesInput.style.height = 'auto';
         categoriesInput.style.height = (categoriesInput.scrollHeight) + 'px'
-        var value = categoriesInput.value;
+        let value = categoriesInput.value;
 
         if (value === '') {input = {};}
         else {input = JSON.parse(value);}
 
         if (typeof input === 'object' && Object.keys(input).length > 0){
-            var newCategories = input;
+            let newCategories = input;
         }
         else return;
 
