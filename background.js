@@ -25,6 +25,18 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         else sendResponse(false);
       }
     );
+  } else if (request.method == "fetch") {
+    console.log("background fetch thing");
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      console.log(tabs[0]);
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        { method: "fetch", fen: request.fen },
+        function (response) {
+          sendResponse(response);
+        }
+      );
+    });
   }
   return true;
 });

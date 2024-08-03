@@ -4,7 +4,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const fenInput = document.getElementById("fenInput");
 
   fetchButton.addEventListener("click", function () {
-    fetch();
+    console.log("fetch button clicked");
+    chrome.runtime.sendMessage(
+      { method: "fetch", fen: fenInput.value },
+      (response) => {
+        console.log(response);
+      }
+    );
   });
 });
 
