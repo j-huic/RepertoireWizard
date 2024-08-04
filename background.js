@@ -33,10 +33,26 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         tabs[0].id,
         { method: "fetch", fen: request.fen },
         function (response) {
+          console.log("background listening for response");
+          // if (chrome.runtime.lastError) {
+          //   console.error(
+          //     "Error in background script:",
+          //     chrome.runtime.lastError.message
+          //   );
+          //   sendResponse({
+          //     success: false,
+          //     error: chrome.runtime.lastError.message,
+          //   });
+          // } else {
+          //   console.log("Response from content script:", response); // Log response for debugging
+          //   sendResponse(response);
+          // }
+          console.log("background got response");
+          console.log(response);
           sendResponse(response);
         }
       );
     });
+    return true;
   }
-  return true;
 });

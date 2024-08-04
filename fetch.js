@@ -1,5 +1,5 @@
-const Chess = require("chess.js").Chess;
-
+// import { Chess } from "chess.js";
+console.log("fetch.js running");
 async function fenFetch(FEN, rep = 139388) {
   console.log("fetch function called");
   if (!FEN) FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -33,7 +33,9 @@ async function fenFetch(FEN, rep = 139388) {
       },
     });
     const data = await response.json();
+    console.log("print from fetch");
     console.log(data);
+    console.log("fetch ending");
     return data;
   } catch (error) {
     console.error("Error:", error);
@@ -65,10 +67,14 @@ movesFromResponse = function (response) {
   return moves;
 };
 
-recursiveFetch = async function (fen, rep, positions, depth) {
+recursiveFetch = async function (fen, rep, depth, positions = {}) {
+  console.log("depth:", depth);
+  console.log("fen:", fen);
+  console.log("positions:", positions);
+
   if (depth === 0) return positions;
 
-  var response = await recursiveFetch(fen, rep);
+  var response = await fenFetch(fen, rep);
   if (response.length === 0) return positions;
 
   var moves = movesFromResponse(response);
@@ -77,16 +83,12 @@ recursiveFetch = async function (fen, rep, positions, depth) {
     var newPositions = await recursiveFetch(
       updateFen(fen, move),
       rep,
-      positions,
-      depth - 1
+      depth - 1,
+      positions
     );
     Object.assign(positions, newPositions);
   }
   return positions;
-};
-
-moveToObject = function (move) {
-  return { move: move };
 };
 
 treeFetch = function (startfen, n, rep) {
@@ -117,10 +119,15 @@ chrome.runtime.onMessage.addListener(async function (
     console.log("content script received fetch message");
     try {
       console.log("trying to fetch");
+      // const data = await recursiveFetch(request.fen, 139388, 3);
       const data = await fenFetch(request.fen);
+      console.log(
+        "data received from fetch function, attempting to send back to background"
+      );
+      console.log(data);
       sendResponse(data);
     } catch (error) {
-      console.error("Error:", error);
+      //console.error("Error:", error);
       sendResponse(null);
     }
 

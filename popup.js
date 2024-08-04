@@ -7,7 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("fetch button clicked");
     chrome.runtime.sendMessage(
       { method: "fetch", fen: fenInput.value },
-      (response) => {
+      function (response) {
+        console.log("popup listening for response");
         console.log(response);
       }
     );
