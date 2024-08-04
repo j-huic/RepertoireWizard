@@ -1,9 +1,9 @@
-console.log("fetch.js running");
+const Chess = require("chess.js").Chess;
 
-async function fenfetch(FEN, rep = 139388) {
+async function fenFetch(FEN, rep = 139388) {
   console.log("fetch function called");
   if (!FEN) FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-  const path = fentopath(FEN, rep);
+  const path = fenToPath(FEN, rep);
   //let proxyUrl = 'https://cors-anywhere.herokuapp.com/';
 
   try {
@@ -47,10 +47,64 @@ async function fenfetch(FEN, rep = 139388) {
   //   .catch((error) => console.error("Error:", error));
 }
 
-fentopath = function (FEN, rep) {
+fenToPath = function (FEN, rep) {
   return (
     "/ajax/nextMoves.php?next=" + FEN.replace(/\s/g, "%20") + "&rep=" + rep
   );
+};
+
+updateFen = function (fen, move) {
+  var chess = new Chess(fen);
+  chess.move(move);
+  return chess.fen();
+};
+
+movesFromResponse = function (response) {
+  if (response.length === 0) return null;
+  var moves = response.map((response) => response["move"]);
+  return moves;
+};
+
+recursiveFetch = async function (fen, rep, positions, depth) {
+  if (depth === 0) return positions;
+
+  var response = await recursiveFetch(fen, rep);
+  if (response.length === 0) return positions;
+
+  var moves = movesFromResponse(response);
+  positions[fen] = moves;
+  for (var move of moves) {
+    var newPositions = await recursiveFetch(
+      updateFen(fen, move),
+      rep,
+      positions,
+      depth - 1
+    );
+    Object.assign(positions, newPositions);
+  }
+  return positions;
+};
+
+moveToObject = function (move) {
+  return { move: move };
+};
+
+treeFetch = function (startfen, n, rep) {
+  var levels = [];
+  var fen = startfen;
+
+  for (var i = 0; i < n; i++) {
+    var positions = {};
+    var response = fenFetch(fen, rep);
+    if (response.length === 0) break;
+    positions[fen] = movesFromResponse(response);
+    fen = updateFen(fen, response[0]["move"]);
+  }
+
+  var response = fenFetch(startfen, rep);
+  positions[startfen] = movesFromResponse(response);
+
+  while (response.length > 0) {}
 };
 
 chrome.runtime.onMessage.addListener(async function (
@@ -63,7 +117,7 @@ chrome.runtime.onMessage.addListener(async function (
     console.log("content script received fetch message");
     try {
       console.log("trying to fetch");
-      const data = await fenfetch(request.fen);
+      const data = await fenFetch(request.fen);
       sendResponse(data);
     } catch (error) {
       console.error("Error:", error);
