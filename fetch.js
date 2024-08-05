@@ -1,5 +1,13 @@
 // import { Chess } from "chess.js";
+
 console.log("fetch.js running");
+
+const fenToPath = function (FEN, rep) {
+  return (
+    "/ajax/nextMoves.php?next=" + FEN.replace(/\s/g, "%20") + "&rep=" + rep
+  );
+};
+
 async function fenFetch(FEN, rep = 139388) {
   console.log("fetch function called");
   if (!FEN) FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -41,33 +49,22 @@ async function fenFetch(FEN, rep = 139388) {
     console.error("Error:", error);
     return null;
   }
-  //   .then((response) => response.json())
-  //   .then((data) => {
-  //     console.log(data);
-  //     callback(data);
-  //   })
-  //   .catch((error) => console.error("Error:", error));
 }
 
-fenToPath = function (FEN, rep) {
-  return (
-    "/ajax/nextMoves.php?next=" + FEN.replace(/\s/g, "%20") + "&rep=" + rep
-  );
-};
-
-updateFen = function (fen, move) {
+const updateFen = async function (fen, move) {
+  const { Chess } = await import("chess.js");
   var chess = new Chess(fen);
   chess.move(move);
   return chess.fen();
 };
 
-movesFromResponse = function (response) {
+const movesFromResponse = function (response) {
   if (response.length === 0) return null;
   var moves = response.map((response) => response["move"]);
   return moves;
 };
 
-recursiveFetch = async function (fen, rep, depth, positions = {}) {
+const recursiveFetch = async function (fen, rep, depth, positions = {}) {
   console.log("depth:", depth);
   console.log("fen:", fen);
   console.log("positions:", positions);
@@ -91,7 +88,7 @@ recursiveFetch = async function (fen, rep, depth, positions = {}) {
   return positions;
 };
 
-treeFetch = function (startfen, n, rep) {
+const treeFetch = function (startfen, n, rep) {
   var levels = [];
   var fen = startfen;
 
@@ -119,15 +116,19 @@ chrome.runtime.onMessage.addListener(async function (
     console.log("content script received fetch message");
     try {
       console.log("trying to fetch");
+      const data = await updateFen(
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "e4"
+      );
       // const data = await recursiveFetch(request.fen, 139388, 3);
-      const data = await fenFetch(request.fen);
+      // const data = await fenFetch(request.fen);
       console.log(
         "data received from fetch function, attempting to send back to background"
       );
       console.log(data);
     } catch (error) {
       console.log("error in fetch");
-      //console.error("Error:", error);
+      console.error("Error:", error);
     }
 
     return true;
