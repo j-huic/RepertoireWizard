@@ -26,7 +26,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       }
     );
   } else if (request.method == "fetch") {
-    console.log("background fetch thing");
+    console.log("background fetch thing should not be running");
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       console.log(tabs[0]);
       chrome.tabs.sendMessage(
@@ -49,10 +49,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
           // }
           console.log("background got response");
           console.log(response);
-          sendResponse(response);
         }
       );
     });
     return true;
   }
+  return true;
 });
