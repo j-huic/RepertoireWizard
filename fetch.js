@@ -1,5 +1,3 @@
-// import { Chess } from "chess.js";
-
 console.log("fetch.js running");
 
 const fenToPath = function (FEN, rep) {
@@ -41,9 +39,8 @@ async function fenFetch(FEN, rep = 139388) {
       },
     });
     const data = await response.json();
-    console.log("print from fetch");
+    console.log("print from fetch:");
     console.log(data);
-    console.log("fetch ending");
     return data;
   } catch (error) {
     console.error("Error:", error);
@@ -52,8 +49,10 @@ async function fenFetch(FEN, rep = 139388) {
 }
 
 const updateFen = async function (fen, move) {
-  const { Chess } = await import("chess.js");
-  var chess = new Chess(fen);
+  const src = chrome.runtime.getURL("node_modules/chess.js");
+  const contentMain = await import(src);
+
+  var chess = new contentMain.Chess(fen);
   chess.move(move);
   return chess.fen();
 };
@@ -106,26 +105,32 @@ const treeFetch = function (startfen, n, rep) {
   while (response.length > 0) {}
 };
 
+const testStep = function () {
+  chrome.runtime.sendMessage({ method: "updateFen" }, () => {
+    console.log("sent updateFen");
+  });
+};
+
 chrome.runtime.onMessage.addListener(async function (
   request,
   sender,
   sendResponse
 ) {
-  console.log("listener listening");
   if (request.method === "fetch") {
     console.log("content script received fetch message");
     try {
       console.log("trying to fetch");
-      const data = await updateFen(
-        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-        "e4"
-      );
+      testStep();
+      // const data = await updateFen(
+      //   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      //   "e4"
+      // );
       // const data = await recursiveFetch(request.fen, 139388, 3);
       // const data = await fenFetch(request.fen);
-      console.log(
-        "data received from fetch function, attempting to send back to background"
-      );
-      console.log(data);
+      // console.log(
+      //   "data received from fetch function, attempting to send back to background"
+      // );
+      // console.log(data);
     } catch (error) {
       console.log("error in fetch");
       console.error("Error:", error);

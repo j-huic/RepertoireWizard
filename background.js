@@ -1,8 +1,10 @@
+import { Chess } from "https://cdn.skypack.dev/chess.js";
+
 console.log("background script running");
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.method == "getOptions") {
-    options = [
+    let options = [
       "removeNotifs",
       "extraDropdown",
       "filterToggle",
@@ -25,6 +27,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         else sendResponse(false);
       }
     );
+  } else if (request.method == "updateFen") {
+    console.log("background received updateFen");
+    const chess = new Chess(
+      "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    );
+    chess.move("e4");
+    console.log(chess.fen());
   } else if (request.method == "fetch") {
     console.log("background fetch thing should not be running");
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
