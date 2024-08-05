@@ -20,12 +20,17 @@
   "permissions": ["storage", "activeTab"],
   "content_scripts": [
     {
+      "matches": ["https://www.chessable.com/explore/*"],
+      "js": ["fetch.js"],
+      "type": "module"
+    },
+    {
       "matches": ["https://www.chessable.com/*"],
       "js": ["global.js"]
     },
     {
       "matches": ["https://www.chessable.com/explore/*"],
-      "js": ["contentScript.js", "filter.js", "fetch.js"]
+      "js": ["contentScript.js", "filter.js"]
     },
     {
       "matches": ["https://www.chessable.com/analysis/*"],
