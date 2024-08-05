@@ -15,7 +15,8 @@
   },
   "options_page": "options.html",
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "permissions": ["storage", "activeTab"],
   "content_scripts": [
@@ -40,7 +41,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["popup.js"],
+      "resources": ["popup.js", "chess.js"],
       "matches": ["<all_urls>"]
     }
   ]
