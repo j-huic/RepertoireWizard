@@ -5,13 +5,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   fetchButton.addEventListener("click", function () {
     console.log("fetch button clicked");
-    chrome.runtime.sendMessage(
-      { method: "fetch", fen: fenInput.value },
-      function (response) {
-        console.log("popup listening for response");
-        console.log(response);
-      }
-    );
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      console.log(tabs[0]);
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        { method: "fetch", fen: fenInput.value },
+        function (response) {
+          console.log("popup sending directly to contscr");
+          console.log(response);
+        }
+      );
+    });
+    // chrome.runtime.sendMessage(
+    //   { method: "fetch", fen: fenInput.value },
+    //   function (response) {
+    //     console.log("popup listening for response");
+    //     console.log(response);
+    //   }
+    // );
   });
 });
 

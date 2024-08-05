@@ -21,15 +21,11 @@
   "content_scripts": [
     {
       "matches": ["https://www.chessable.com/*"],
-      "js": ["fetch.js", "global.js"]
+      "js": ["global.js"]
     },
     {
       "matches": ["https://www.chessable.com/explore/*"],
-      "js": ["contentScript.js"]
-    },
-    {
-      "matches": ["https://www.chessable.com/explore/*"],
-      "js": ["filter.js"]
+      "js": ["contentScript.js", "filter.js", "fetch.js"]
     },
     {
       "matches": ["https://www.chessable.com/analysis/*"],

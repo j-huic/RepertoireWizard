@@ -125,8 +125,9 @@ chrome.runtime.onMessage.addListener(async function (
         "data received from fetch function, attempting to send back to background"
       );
       console.log(data);
-      sendResponse(data);
+      sendResponse("bla");
     } catch (error) {
+      console.log("error in fetch");
       //console.error("Error:", error);
       sendResponse(null);
     }
