@@ -7,14 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("fetch button clicked");
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       console.log(tabs[0]);
-      chrome.tabs.sendMessage(
-        tabs[0].id,
-        { method: "fetch", fen: fenInput.value },
-        function (response) {
-          console.log("popup sending directly to contscr");
-          console.log(response);
-        }
-      );
+      chrome.tabs.sendMessage(tabs[0].id, {
+        method: "fetch",
+        fen: fenInput.value,
+      });
     });
     // chrome.runtime.sendMessage(
     //   { method: "fetch", fen: fenInput.value },
