@@ -27,7 +27,7 @@
     },
     {
       "matches": ["https://www.chessable.com/*"],
-      "js": ["global.js"]
+      "js": ["global.js", "scrape.js"]
     },
     {
       "matches": ["https://www.chessable.com/explore/*"],
@@ -37,6 +37,10 @@
       "matches": ["https://www.chessable.com/analysis/*"],
       "js": ["analysisScript.js"],
       "run_at": "document_start"
+    },
+    {
+      "matches": ["https://lichess.org/analysis*"],
+      "js": ["lichess.js"]
     }
   ],
   "web_accessible_resources": [
