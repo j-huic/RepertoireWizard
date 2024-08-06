@@ -49,12 +49,20 @@ async function fenFetch(FEN, rep = 139388) {
 }
 
 const updateFen = async function (fen, move) {
-  const src = chrome.runtime.getURL("node_modules/chess.js");
-  const contentMain = await import(src);
+  const response = await new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(
+      { method: "updateFen", fen: fen, move: move },
+      (response) => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError.message);
+        } else {
+          resolve(response);
+        }
+      }
+    );
+  });
 
-  var chess = new contentMain.Chess(fen);
-  chess.move(move);
-  return chess.fen();
+  return response.fen;
 };
 
 const movesFromResponse = function (response) {
@@ -66,22 +74,21 @@ const movesFromResponse = function (response) {
 const recursiveFetch = async function (fen, rep, depth, positions = {}) {
   console.log("depth:", depth);
   console.log("fen:", fen);
-  console.log("positions:", positions);
+  console.log("positions:", JSON.stringify(positions, null, 2));
 
-  if (depth === 0) return positions;
+  if (depth === 0 || depth < -50) return positions;
 
   var response = await fenFetch(fen, rep);
   if (response.length === 0) return positions;
+  else {
+    var moves = movesFromResponse(response);
+    positions[fen] = moves;
+  }
 
-  var moves = movesFromResponse(response);
-  positions[fen] = moves;
   for (var move of moves) {
-    var newPositions = await recursiveFetch(
-      updateFen(fen, move),
-      rep,
-      depth - 1,
-      positions
-    );
+    console.log("move:", move, "datatype:", typeof move);
+    newFen = await updateFen(fen, move);
+    var newPositions = await recursiveFetch(newFen, rep, depth - 1, positions);
     Object.assign(positions, newPositions);
   }
   return positions;
@@ -117,25 +124,26 @@ chrome.runtime.onMessage.addListener(async function (
   sendResponse
 ) {
   if (request.method === "fetch") {
+    console.log("_________________________");
+    console.log("-------------------------");
     console.log("content script received fetch message");
     try {
-      console.log("trying to fetch");
-      testStep();
-      // const data = await updateFen(
-      //   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-      //   "e4"
-      // );
-      // const data = await recursiveFetch(request.fen, 139388, 3);
-      // const data = await fenFetch(request.fen);
-      // console.log(
-      //   "data received from fetch function, attempting to send back to background"
-      // );
-      // console.log(data);
+      const data = await recursiveFetch(request.fen, 139388, 15);
+      console.log(data);
+      saveVar("kalash", data);
     } catch (error) {
       console.log("error in fetch");
       console.error("Error:", error);
     }
 
-    return true;
+    //return true;
   }
 });
+
+function saveVar(key, value) {
+  console.log('saving variable "' + key + '" with value: ' + value);
+  chrome.runtime.sendMessage(
+    { method: "saveVar", key: key, value: value },
+    () => {}
+  );
+}

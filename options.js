@@ -237,5 +237,8 @@ document.addEventListener("DOMContentLoaded", function () {
     chrome.storage.sync.get(null, function (items) {
       console.log("All variables in sync storage:", items);
     });
+    chrome.storage.local.get(null, function (items) {
+      console.log("All variables in local storage:", items);
+    });
   }
 });
