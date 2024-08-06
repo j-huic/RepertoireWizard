@@ -33,6 +33,11 @@ document.addEventListener("DOMContentLoaded", function () {
   renameInput = document.getElementById("renameInput");
   renameSubmit = document.getElementById("renameSubmit");
 
+  varnameInput = document.getElementById("varnameInput");
+  varnameSubmit = document.getElementById("varnameSubmit");
+  varData = document.getElementById("varData");
+  listVars = document.getElementById("listVars");
+
   chrome.storage.sync.get(
     ["blacklist", "categories", "rename"],
     function (storage) {
@@ -58,6 +63,15 @@ document.addEventListener("DOMContentLoaded", function () {
       resizeInput(renameInput, storage.rename);
     }
   );
+
+  varnameSubmit.addEventListener("click", submitVarname);
+  varnameInput.addEventListener("keydown", function (event) {
+    if (event.keyCode === 13) {
+      event.preventDefault();
+      submitVarname();
+    }
+  });
+  listVars.addEventListener("click", listAllSyncVariables);
 
   blacklistSubmit.addEventListener("click", submitBlacklist);
   blacklistInput.addEventListener("keydown", function (event) {
@@ -187,5 +201,41 @@ document.addEventListener("DOMContentLoaded", function () {
     } else return;
 
     chrome.storage.sync.set({ rename: newRename }, function () {});
+  }
+
+  function submitVarname() {
+    let storage;
+    let varName;
+    input = varnameInput.value;
+
+    [storage, varName] = input.includes(":")
+      ? input.split(":")
+      : ["local", input];
+
+    if (storage === "sync") {
+      chrome.storage.sync.get([varName], function (items) {
+        if (items[varName] === undefined) {
+          alert('No variable found with the name: "' + varName + '"');
+          return;
+        }
+        varData.textContent = JSON.stringify(items[varName], null, 2);
+      });
+    } else if (storage === "local") {
+      chrome.storage.local.get([varName], function (items) {
+        if (items[varName] === undefined) {
+          alert('No variable found with the name: "' + varName + '"');
+          return;
+        }
+        varData.textContent = JSON.stringify(items[varName], null, 2);
+      });
+    } else {
+      alert('Invalid storage type: "' + storage + '"');
+    }
+  }
+
+  function listAllSyncVariables() {
+    chrome.storage.sync.get(null, function (items) {
+      console.log("All variables in sync storage:", items);
+    });
   }
 });

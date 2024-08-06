@@ -3,8 +3,10 @@
   <head>
     <script src="options.js"></script>
   </head>
+
   <body>
     <h1>Options</h1>
+
     <div>
       <input type="checkbox" id="removeNotifs" name="checkbox" />
       <label for="removeNotifs">Hide Notification Alert</label>
@@ -20,6 +22,26 @@
     <div>
       <input type="checkbox" id="categoriesToggle" name="checkbox" />
       <label for="categoriesToggle">Toggle Categorisation</label>
+    </div>
+
+    <br />
+
+    <div>
+      <label for="varnameInput">Get Varname:</label>
+      <input type="text" id="varnameInput" name="textInput" />
+      <button id="varnameSubmit">Submit</button>
+      <button id="listVars">List Variables</button>
+    </div>
+    <br />
+    <div>
+      <label for="varData">Repertoire Data:</label>
+      <textarea
+        rows="1"
+        cols="20"
+        id="varData"
+        name="varData"
+        wrap="hard"
+      ></textarea>
     </div>
 
     <br />
@@ -80,12 +102,6 @@
         new name as value. E.g. {"Lifetime Repertoires: Sam Shankland's d4 -
         Part 1": "Shanland d4 - QGA/Slav"}
       </div>
-    </div>
-
-    <div>
-      <label for="fetch">Enter Text:</label>
-      <input type="text" id="fetch" name="textInput" />
-      <button id="submitButton">Submit</button>
     </div>
   </body>
 </html>
