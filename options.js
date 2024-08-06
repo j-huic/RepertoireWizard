@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
   chrome.storage.sync.get(
     ["removeNotifs", "extraDropdown", "filterToggle", "categoriesToggle"],
     function (options) {
@@ -21,26 +22,120 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  function mergeDicts(dict1, dict2) {
-    var mergedDict = {};
+  blacklistInput = document.getElementById("blacklistInput");
+  blacklistSubmit = document.getElementById("blacklistSubmit");
+  clearBlacklist = document.getElementById("clearBlacklist");
 
-    for (var key in dict1) {
-      if (dict1.hasOwnProperty(key)) {
-        mergedDict[key] = [].concat(dict1[key]);
+  categoriesInput = document.getElementById("categoriesInput");
+  categoriesSubmit = document.getElementById("categoriesSubmit");
+  clearCategories = document.getElementById("clearCategories");
+
+  renameInput = document.getElementById("renameInput");
+  renameSubmit = document.getElementById("renameSubmit");
+
+  chrome.storage.sync.get(
+    ["blacklist", "categories", "rename"],
+    function (storage) {
+      blacklistInput.value = storage.blacklist;
+      blacklistInput.style.height = "auto";
+      blacklistInput.style.height = blacklistInput.scrollHeight + "px";
+
+      function resizeInput(input, obj) {
+        input.value = JSON.stringify(obj, null, 2);
+        input.style.whiteSpace = "pre"; // Preserve formatting
+        input.style.width = "auto";
+        input.style.height = "auto";
+        input.style.width = input.scrollWidth + "px";
+        input.style.height = input.scrollHeight + "px";
       }
-    }
 
-    for (var key in dict2) {
-      if (dict2.hasOwnProperty(key)) {
-        if (!mergedDict[key]) {
-          mergedDict[key] = [];
-        }
-        mergedDict[key] = mergedDict[key].concat(dict2[key]);
+      categoriesInput.value = JSON.stringify(storage.categories, null, 2);
+      categoriesInput.style.height = "auto";
+      categoriesInput.style.height = categoriesInput.scrollHeight + "px";
+      resizeInput(categoriesInput, storage.categories);
+
+      renameInput.value = JSON.stringify(storage.rename, null, 2);
+      resizeInput(renameInput, storage.rename);
+    }
+  );
+
+  blacklistSubmit.addEventListener("click", submitBlacklist);
+  blacklistInput.addEventListener("keydown", function (event) {
+    if (event.keyCode === 13) {
+      event.preventDefault();
+      submitBlacklist();
+    }
+  });
+
+  categoriesSubmit.addEventListener("click", submitCategories);
+  categoriesInput.addEventListener("keydown", function (event) {
+    if (event.keyCode === 13) {
+      event.preventDefault();
+      submitCategories();
+    }
+  });
+
+  renameSubmit.addEventListener("click", submitRename);
+  renameInput.addEventListener("keydown", function (event) {
+    if (event.keyCode === 13) {
+      event.preventDefault();
+      submitRename();
+    }
+  });
+
+  clearBlacklist.addEventListener("click", function () {
+    chrome.storage.sync.set({ blacklist: [] }, function () {
+      blacklistInput.value = "";
+      console.log("Blacklist cleared");
+    });
+  });
+
+  clearCategories.addEventListener("click", function () {
+    chrome.storage.sync.set({ categories: {} }, function () {
+      console.log("Categories cleared");
+    });
+  });
+
+  showBlacklist.addEventListener("click", function () {
+    chrome.storage.sync.get("blacklist", function (storage) {
+      if (storage.blacklist) {
+        console.log(storage.blacklist);
+        alert(storage.blacklist.join("\n"));
+      } else {
+        alert("Blacklist is empty");
       }
-    }
+    });
+  });
 
-    return mergedDict;
-  }
+  showCategories.addEventListener("click", function () {
+    chrome.storage.sync.get("categories", function (storage) {
+      if (storage.categories) {
+        console.log(storage.categories);
+        alert(JSON.stringify(storage.categories, null, 2));
+      } else {
+        alert("categories is empty");
+      }
+    });
+  });
+
+  const infoIcon = document.getElementById("infoIcon");
+  const infoText = document.getElementById("infoText");
+  const infoIconCat = document.getElementById("infoIconCat");
+  const infoTextCat = document.getElementById("infoTextCat");
+  const infoIconRename = document.getElementById("infoIconRename");
+  const infoTextRename = document.getElementById("infoTextRename");
+
+  infoIcon.addEventListener("click", () => {
+    alert(infoText.textContent);
+  });
+  infoIconCat.addEventListener("click", () => {
+    alert(infoTextCat.textContent);
+  });
+  infoIconRename.addEventListener("click", () => {
+    chrome.storage.sync.get("rename", function (storage) {
+      console.log(storage.rename);
+    });
+  });
 
   function submitBlacklist() {
     blacklistInput.style.height = "auto";
@@ -93,119 +188,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
     chrome.storage.sync.set({ rename: newRename }, function () {});
   }
-
-  blacklistInput = document.getElementById("blacklistInput");
-  blacklistSubmit = document.getElementById("blacklistSubmit");
-  clearBlacklist = document.getElementById("clearBlacklist");
-
-  categoriesInput = document.getElementById("categoriesInput");
-  categoriesSubmit = document.getElementById("categoriesSubmit");
-  clearCategories = document.getElementById("clearCategories");
-
-  renameInput = document.getElementById("renameInput");
-  renameSubmit = document.getElementById("renameSubmit");
-
-  chrome.storage.sync.get(
-    ["blacklist", "categories", "rename"],
-    function (storage) {
-      blacklistInput.value = storage.blacklist;
-      blacklistInput.style.height = "auto";
-      blacklistInput.style.height = blacklistInput.scrollHeight + "px";
-
-      function resizeInput(input, obj) {
-        input.value = JSON.stringify(obj, null, 2);
-        input.style.whiteSpace = "pre"; // Preserve formatting
-        input.style.width = "auto";
-        input.style.height = "auto";
-        input.style.width = input.scrollWidth + "px";
-        input.style.height = input.scrollHeight + "px";
-      }
-
-      //categoriesInput.value = JSON.stringify(storage.categories).replace(/,\s*/g, ', ');
-      categoriesInput.value = JSON.stringify(storage.categories, null, 2);
-      categoriesInput.style.height = "auto";
-      categoriesInput.style.height = categoriesInput.scrollHeight + "px";
-      resizeInput(categoriesInput, storage.categories);
-
-      renameInput.value = JSON.stringify(storage.rename, null, 2);
-      resizeInput(renameInput, storage.rename);
-    }
-  );
-
-  blacklistSubmit.addEventListener("click", submitBlacklist);
-  blacklistInput.addEventListener("keydown", function (event) {
-    if (event.keyCode === 13) {
-      event.preventDefault();
-      submitBlacklist();
-    }
-  });
-
-  categoriesSubmit.addEventListener("click", submitCategories);
-  categoriesInput.addEventListener("keydown", function (event) {
-    if (event.keyCode === 13) {
-      event.preventDefault();
-      submitCategories();
-    }
-  });
-
-  renameSubmit.addEventListener("click", submitRename);
-  renameInput.addEventListener("keydown", function (event) {
-    if (event.keyCode === 13) {
-      event.preventDefault();
-      submitRename();
-    }
-  });
-
-  clearBlacklist.addEventListener("click", function () {
-    chrome.storage.sync.set({ blacklist: [] }, function () {
-      blacklistInput.value = "";
-      console.log("Blacklist cleared");
-    });
-  });
-  clearCategories.addEventListener("click", function () {
-    chrome.storage.sync.set({ categories: {} }, function () {
-      console.log("Categories cleared");
-    });
-  });
-
-  showBlacklist.addEventListener("click", function () {
-    chrome.storage.sync.get("blacklist", function (storage) {
-      if (storage.blacklist) {
-        console.log(storage.blacklist);
-        alert(storage.blacklist.join("\n"));
-      } else {
-        alert("Blacklist is empty");
-      }
-    });
-  });
-  showCategories.addEventListener("click", function () {
-    chrome.storage.sync.get("categories", function (storage) {
-      if (storage.categories) {
-        console.log(storage.categories);
-        alert(JSON.stringify(storage.categories, null, 2));
-      } else {
-        alert("categories is empty");
-      }
-    });
-  });
-
-  const infoIcon = document.getElementById("infoIcon");
-  const infoText = document.getElementById("infoText");
-  const infoIconCat = document.getElementById("infoIconCat");
-  const infoTextCat = document.getElementById("infoTextCat");
-  const infoIconRename = document.getElementById("infoIconRename");
-  const infoTextRename = document.getElementById("infoTextRename");
-
-  infoIcon.addEventListener("click", () => {
-    alert(infoText.textContent);
-  });
-  infoIconCat.addEventListener("click", () => {
-    alert(infoTextCat.textContent);
-  });
-  infoIconRename.addEventListener("click", () => {
-    chrome.storage.sync.get("rename", function (storage) {
-      console.log(storage.rename);
-    });
-    //alert(infoTextRename.textContent);
-  });
 });
