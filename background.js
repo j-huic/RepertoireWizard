@@ -67,6 +67,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         });
       }
     });
+  } else if (request.method === "getData") {
+    chrome.storage.local.get([request.key], (items) => {
+      sendResponse(items[request.key]);
+    });
   }
   return true;
 });
