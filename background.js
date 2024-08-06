@@ -71,6 +71,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     chrome.storage.local.get([request.key], (items) => {
       sendResponse(items[request.key]);
     });
+  } else if (request.method === "openTabs") {
+    let url = request.url;
+    chrome.tabs.create({ url: url, active: false }, (tab) => {});
+  } else if (request.method === "print") {
+    console.log(request.message);
   }
   return true;
 });
