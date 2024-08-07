@@ -19,26 +19,60 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  testButton.addEventListener("click", () => {
+  testButton.addEventListener("click", async () => {
     let input = fenInput.value;
+    if (input === "") input = "https://www.chessable.com/course/77656/41";
+
     if (input.length > 2) {
-      chrome.tabs.create({ url: input, active: false }, () => {});
+      let moves = await getMovesFromUrl(input);
+      consolePrint("hello from popup");
+      consolePrint(moves);
     } else {
-      cardUrls = getCardUrls(document);
+      let cardUrls = await getCardUrls(document);
       consolePrint("hello from popup");
       consolePrint(cardUrls);
-      cardUrls.slice(0, 5).forEach((url) => {
-        chrome.tabs.create({ url: url, active: false }, () => {});
-      });
+
+      for (let url of cardUrls) {
+        let moves = await getMovesFromUrl(url);
+        consolePrint(moves);
+      }
     }
   });
 
-  function getCardUrls(document) {
-    let box = document.getElementById("chapterBoxes");
-    consolePrint(box);
-    let cards = box.getElementsByClassName("levelBox");
-    let urls = Array.from(cards).map((card) => card.href);
-    return urls;
+  async function getCardUrls() {
+    return new Promise((resolve, reject) => {
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          { method: "getCardUrls" },
+          (response) => {
+            resolve(response);
+          }
+        );
+      });
+    });
+  }
+
+  async function getMovesFromUrl(url) {
+    return new Promise((resolve, reject) => {
+      chrome.tabs.create({ url: url, active: false }, (tab) => {
+        chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+          if (tabId === tab.id && info.status === "complete") {
+            chrome.tabs.sendMessage(
+              tab.id,
+              { method: "getMoves" },
+              (response) => {
+                consolePrint("response from popup:");
+                consolePrint(response);
+                resolve(response);
+                // chrome.tabs.remove(tab.id);
+                // chrome.tabs.onUpdated.removeListener(listener);
+              }
+            );
+          }
+        });
+      });
+    });
   }
 
   function consolePrint(string) {
