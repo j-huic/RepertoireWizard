@@ -8,17 +8,17 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   } else if (request.method === "getBlacklist") {
     handleGetBlacklist(sendResponse);
   } else if (request.method === "getCategories") {
-    handleGetCategories;
+    handleGetCategories(sendResponse);
   } else if (request.method === "updateFen") {
-    handleUpdateFen(sendResponse);
+    handleUpdateFen(request, sendResponse);
   } else if (request.method === "fetch") {
-    handleFetch(sendResponse);
+    handleFetch(request);
   } else if (request.method === "saveVar") {
-    handleSaveVar(sendResponse);
+    handleSaveVar(request);
   } else if (request.method === "getData") {
-    handleGetData(sendResponse);
+    handleGetData(request, sendResponse);
   } else if (request.method === "openTabs") {
-    handleOpenTabs(sendResponse);
+    handleOpenTabs(request);
   } else if (request.method === "print") {
     console.log(request.message);
   } else if (request.method === "getRepertoires") {
@@ -60,7 +60,7 @@ function handleGetCategories(sendResponse) {
   );
 }
 
-function handleUpdateFen(sendResponse) {
+function handleUpdateFen(request, sendResponse) {
   console.log("background received updateFen");
   const chess = new Chess(request.fen);
   chess.move(request.move);
@@ -68,7 +68,7 @@ function handleUpdateFen(sendResponse) {
   sendResponse({ fen: chess.fen() });
 }
 
-function handleFetch(sendResponse) {
+function handleFetch(request) {
   console.log("background fetch thing should not be running");
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     console.log(tabs[0]);
@@ -84,7 +84,7 @@ function handleFetch(sendResponse) {
   return true;
 }
 
-function handleSaveVar(sendResponse) {
+function handleSaveVar(request) {
   console.log("savevar message received");
   let key = request.key;
   let value = request.value;
@@ -106,13 +106,13 @@ function handleSaveVar(sendResponse) {
   });
 }
 
-function handleGetData(sendResponse) {
+function handleGetData(request, sendResponse) {
   chrome.storage.local.get([request.key], (items) => {
     sendResponse(items[request.key]);
   });
 }
 
-function handleOpenTabs(sendResponse) {
+function handleOpenTabs(request) {
   let url = request.url;
   chrome.tabs.create({ url: url, active: false }, (tab) => {});
 }
