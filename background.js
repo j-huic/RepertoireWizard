@@ -76,9 +76,23 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     chrome.tabs.create({ url: url, active: false }, (tab) => {});
   } else if (request.method === "print") {
     console.log(request.message);
+  } else if (request.method === "getRepertoires") {
+    getRepertoires().then((repertoires) => {
+      sendResponse(repertoires);
+    });
+    return true;
   }
   return true;
 });
+
+async function getRepertoires() {
+  let response = await fetch(
+    chrome.runtime.getURL("coursefiles/allcourses.json")
+  );
+  let repertoires = await response.json();
+  let courses = Object.keys(repertoires);
+  return courses;
+}
 
 function mergeDicts(dict1, dict2) {
   var mergedDict = {};
