@@ -17,6 +17,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     handleSaveVar(request);
   } else if (request.method === "getData") {
     handleGetData(request, sendResponse);
+    return true;
   } else if (request.method === "openTabs") {
     handleOpenTabs(request);
   } else if (request.method === "print") {

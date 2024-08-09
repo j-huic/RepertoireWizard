@@ -39,13 +39,13 @@
       "run_at": "document_start"
     },
     {
-      "matches": ["https://lichess.org/analysis*"],
+      "matches": ["https://lichess.org/*"],
       "js": ["lichess.js"]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["popup.js", "chess.js"],
+      "resources": ["popup.js", "chess.js", "coursefiles/*"],
       "matches": ["<all_urls>"]
     }
   ]
