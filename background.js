@@ -4,76 +4,21 @@ console.log("background script running");
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.method === "getOptions") {
-    let options = [
-      "removeNotifs",
-      "extraDropdown",
-      "filterToggle",
-      "categoriesToggle",
-      "rename",
-    ];
-    chrome.storage.sync.get(options, function (items) {
-      sendResponse(items);
-    });
+    handleGetOptions(sendResponse);
   } else if (request.method === "getBlacklist") {
-    chrome.storage.sync.get(["blacklist", "filterToggle"], function (item) {
-      if (item.filterToggle) sendResponse(item);
-      else sendResponse(false);
-    });
+    handleGetBlacklist(sendResponse);
   } else if (request.method === "getCategories") {
-    chrome.storage.sync.get(
-      ["categories", "categoriesToggle", "rename"],
-      function (item) {
-        if (item.categoriesToggle) sendResponse(item);
-        else sendResponse(false);
-      }
-    );
+    handleGetCategories;
   } else if (request.method === "updateFen") {
-    console.log("background received updateFen");
-    const chess = new Chess(request.fen);
-    chess.move(request.move);
-    console.log(chess.fen());
-    sendResponse({ fen: chess.fen() });
+    handleUpdateFen(sendResponse);
   } else if (request.method === "fetch") {
-    console.log("background fetch thing should not be running");
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      console.log(tabs[0]);
-      chrome.tabs.sendMessage(
-        tabs[0].id,
-        { method: "fetch", fen: request.fen },
-        function (response) {
-          console.log("background got response");
-          console.log(response);
-        }
-      );
-    });
-    return true;
+    handleFetch(sendResponse);
   } else if (request.method === "saveVar") {
-    console.log("savevar message received");
-    let key = request.key;
-    let value = request.value;
-    chrome.storage.local.get([key], (items) => {
-      if (
-        items[key] &&
-        typeof items[key] === "object" &&
-        typeof value === "object"
-      ) {
-        let newValue = mergeDicts(items[key], value);
-        chrome.storage.local.set({ [key]: newValue }, () => {
-          console.log("saved new value to storage");
-        });
-      } else {
-        chrome.storage.local.set({ [key]: value }, () => {
-          console.log("saved new value to storage");
-        });
-      }
-    });
+    handleSaveVar(sendResponse);
   } else if (request.method === "getData") {
-    chrome.storage.local.get([request.key], (items) => {
-      sendResponse(items[request.key]);
-    });
+    handleGetData(sendResponse);
   } else if (request.method === "openTabs") {
-    let url = request.url;
-    chrome.tabs.create({ url: url, active: false }, (tab) => {});
+    handleOpenTabs(sendResponse);
   } else if (request.method === "print") {
     console.log(request.message);
   } else if (request.method === "getRepertoires") {
@@ -84,6 +29,93 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
   return true;
 });
+
+function handleGetOptions(sendResponse) {
+  let options = [
+    "removeNotifs",
+    "extraDropdown",
+    "filterToggle",
+    "categoriesToggle",
+    "rename",
+  ];
+  chrome.storage.sync.get(options, function (items) {
+    sendResponse(items);
+  });
+}
+
+function handleGetBlacklist(sendResponse) {
+  chrome.storage.sync.get(["blacklist", "filterToggle"], function (item) {
+    if (item.filterToggle) sendResponse(item);
+    else sendResponse(false);
+  });
+}
+
+function handleGetCategories(sendResponse) {
+  chrome.storage.sync.get(
+    ["categories", "categoriesToggle", "rename"],
+    function (item) {
+      if (item.categoriesToggle) sendResponse(item);
+      else sendResponse(false);
+    }
+  );
+}
+
+function handleUpdateFen(sendResponse) {
+  console.log("background received updateFen");
+  const chess = new Chess(request.fen);
+  chess.move(request.move);
+  console.log(chess.fen());
+  sendResponse({ fen: chess.fen() });
+}
+
+function handleFetch(sendResponse) {
+  console.log("background fetch thing should not be running");
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    console.log(tabs[0]);
+    chrome.tabs.sendMessage(
+      tabs[0].id,
+      { method: "fetch", fen: request.fen },
+      function (response) {
+        console.log("background got response");
+        console.log(response);
+      }
+    );
+  });
+  return true;
+}
+
+function handleSaveVar(sendResponse) {
+  console.log("savevar message received");
+  let key = request.key;
+  let value = request.value;
+  chrome.storage.local.get([key], (items) => {
+    if (
+      items[key] &&
+      typeof items[key] === "object" &&
+      typeof value === "object"
+    ) {
+      let newValue = mergeDicts(items[key], value);
+      chrome.storage.local.set({ [key]: newValue }, () => {
+        console.log("saved new value to storage");
+      });
+    } else {
+      chrome.storage.local.set({ [key]: value }, () => {
+        console.log("saved new value to storage");
+      });
+    }
+  });
+}
+
+function handleGetData(sendResponse) {
+  chrome.storage.local.get([request.key], (items) => {
+    sendResponse(items[request.key]);
+  });
+}
+
+function handleOpenTabs(sendResponse) {
+  let url = request.url;
+  chrome.tabs.create({ url: url, active: false }, (tab) => {});
+}
 
 async function getRepertoires() {
   let response = await fetch(
