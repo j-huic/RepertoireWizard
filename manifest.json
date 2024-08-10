@@ -40,7 +40,7 @@
     },
     {
       "matches": ["https://lichess.org/*"],
-      "js": ["lichess.js"]
+      "js": ["observerTest.js"]
     }
   ],
   "web_accessible_resources": [

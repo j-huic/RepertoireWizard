@@ -1,5 +1,43 @@
+console.log("script working");
+
 var allcourses = {};
 
+initializeData();
+
+let observerStatic = new MutationObserver(function (mutations) {
+  if (document.getElementsByClassName("analyse__wiki empty")[0]) {
+    static();
+    observerStatic.disconnect();
+  }
+});
+
+let observerDynamic = new MutationObserver(function (mutations) {
+  mutations.forEach(function (mutation) {
+    if (mutation.type === "attributes") {
+      let fen = mutation.target.attributes[0].value;
+      let body = document.querySelector("body");
+      if (!body.className.includes("playing")) {
+        console.log("mutation detected");
+        greenCircle();
+        dynamic(fen);
+        moveSelectorDisplay();
+      }
+    }
+  });
+});
+
+setTimeout(function () {
+  targetNode = document.querySelector("cg-board");
+  if (targetNode) {
+    observerDynamic.observe(targetNode, { attributes: true, subtree: true });
+  } else {
+    console.log("no target node");
+  }
+}, 500);
+
+observerStatic.observe(document, { childList: true, subtree: true });
+
+// Helper functions
 async function loadJSON(path) {
   const response = await fetch(chrome.runtime.getURL(path));
   const json = await response.json();
@@ -22,35 +60,6 @@ async function initializeDataFromLists(whitelist, blacklist) {
     Object.assign(black, data);
   }
 }
-
-initializeData();
-
-let observerStatic = new MutationObserver(function (mutations) {
-  if (document.getElementsByClassName("analyse__wiki empty")[0]) {
-    static();
-    observerStatic.disconnect();
-  }
-});
-
-let observerDynamic = new MutationObserver(function (mutations) {
-  mutations.forEach(function (mutation) {
-    if (mutation.type === "attributes") {
-      let fen = mutation.target.attributes[0].value;
-      let body = document.querySelector("body");
-      if (!body.className.includes("playing")) {
-        dynamic(fen);
-        moveSelectorDisplay();
-      }
-    }
-  });
-});
-
-setTimeout(function () {
-  targetNode = document.querySelector("tbody");
-  observerDynamic.observe(targetNode, { attributes: true });
-}, 500);
-
-observerStatic.observe(document, { childList: true, subtree: true });
 
 function static() {
   empty = document.getElementsByClassName("analyse__wiki empty")[0];
@@ -81,8 +90,17 @@ function dynamic(fen) {
   }
 }
 
+function greenCircle() {
+  let circle = "\u{1F7E2}";
+  let title = document.getElementsByClassName("site-name")[0];
+  title.innerText = "lichess.org" + circle;
+}
+
 function moveSelectorDisplay() {
   let tbody = document.getElementsByTagName("tbody")[0];
+  if (!tbody) {
+    return;
+  }
   let fen = tbody.attributes[0].value;
   let courseMoves = displayMoves(fen, true);
   let allCourseMoves = Object.values(courseMoves).flat();
