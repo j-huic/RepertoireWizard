@@ -1,9 +1,8 @@
 var oldFen = "";
-
 var allcourses = {};
 initializeData();
 
-let mainObserver = new MutationObserver((mutations) => {
+let mainObserver = new MutationObserver(() => {
   tbody = document.querySelector("tbody");
 
   if (tbody && tbody.attributes["data-fen"]) {
@@ -13,7 +12,16 @@ let mainObserver = new MutationObserver((mutations) => {
   }
 });
 
+let observerStatic = new MutationObserver(function (mutations) {
+  let wiki = document.getElementsByClassName("analyse__wiki empty")[0];
+  if (wiki) {
+    wiki.remove();
+    observerStatic.disconnect();
+  }
+});
+
 mainObserver.observe(document, { childList: true, subtree: true });
+observerStatic.observe(document, { childList: true, subtree: true });
 
 // functions
 
@@ -94,7 +102,6 @@ function onFenChange(mutationList) {
 function checkFenChange() {
   let newFen = getFen();
   if (newFen !== oldFen) {
-    console.log(newFen);
     moveSelectorDisplay();
     oldFen = newFen;
   }

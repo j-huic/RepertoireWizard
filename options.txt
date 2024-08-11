@@ -28,6 +28,8 @@ RENAME:
 {
   "King's Kalashnikov Sicilian": "Kalashnikov",
   "King's anti-sicilians": "Anti-Sicilians",
+  "Lifetime Repertoires: King's Indian Defense - Part 1": "KID 1",
+  "Lifetime Repertoires: King's Indian Defense - Part 2": "KID 2",
   "Lifetime Repertoires: Sam Shankland's 1. d4 - Part 1": "Shankland - Sidelines",
   "Lifetime Repertoires: Sam Shankland's 1. d4 - Part 2": "Shankland - Indians/Grun",
   "Lifetime Repertoires: Sam Shankland's 1. d4 - Part 3": "Shankland - QGD/Slav",

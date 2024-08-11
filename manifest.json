@@ -21,13 +21,8 @@
   "permissions": ["storage", "activeTab"],
   "content_scripts": [
     {
-      "matches": ["https://www.chessable.com/explore/*"],
-      "js": ["fetch.js"],
-      "type": "module"
-    },
-    {
       "matches": ["https://www.chessable.com/*"],
-      "js": ["global.js", "scrape.js"]
+      "js": ["global.js"]
     },
     {
       "matches": ["https://www.chessable.com/explore/*"],
@@ -40,12 +35,12 @@
     },
     {
       "matches": ["https://lichess.org/*"],
-      "js": ["observerTest.js"]
+      "js": ["moveHightlighting.js"]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["popup.js", "chess.js", "coursefiles/*"],
+      "resources": ["popup.js", "coursefiles/*"],
       "matches": ["<all_urls>"]
     }
   ]
