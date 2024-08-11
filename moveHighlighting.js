@@ -28,7 +28,7 @@ observerStatic.observe(document, { childList: true, subtree: true });
 function moveSelectorDisplay() {
   let tbody = document.getElementsByTagName("tbody")[0];
   let fen = tbody.attributes[0].value;
-  let courseMoves = displayMoves(fen, true);
+  let courseMoves = displayMoves(getPureFen(fen), true);
   let allCourseMoves = Object.values(courseMoves).flat();
   let uniqueCourseMoves = Array.from(new Set(allCourseMoves));
 
@@ -107,6 +107,12 @@ function checkFenChange() {
   }
 }
 
+function getPureFen(fen) {
+  let split = fen.split(" ");
+  let newFen = split.slice(0, split.length - 2).join(" ");
+  return newFen;
+}
+
 async function loadJSON(path) {
   const response = await fetch(chrome.runtime.getURL(path));
   const json = await response.json();
@@ -114,5 +120,5 @@ async function loadJSON(path) {
 }
 
 async function initializeData() {
-  allcourses = await loadJSON("coursefiles/allcourses.json");
+  allcourses = await loadJSON("coursefiles/allcourses_pure.json");
 }
