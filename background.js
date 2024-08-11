@@ -38,6 +38,7 @@ function handleGetOptions(sendResponse) {
     "filterToggle",
     "categoriesToggle",
     "rename",
+    "sideAgnostic",
   ];
   chrome.storage.sync.get(options, function (items) {
     sendResponse(items);

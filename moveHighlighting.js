@@ -1,5 +1,6 @@
 var oldFen = "";
 var allcourses = {};
+var options = {};
 initializeData();
 
 let mainObserver = new MutationObserver(() => {
@@ -28,7 +29,8 @@ observerStatic.observe(document, { childList: true, subtree: true });
 function moveSelectorDisplay() {
   let tbody = document.getElementsByTagName("tbody")[0];
   let fen = tbody.attributes[0].value;
-  let courseMoves = displayMoves(getPureFen(fen), true);
+
+  let courseMoves = displayMoves(getPureFen(fen), options.sideAgnostic);
   let allCourseMoves = Object.values(courseMoves).flat();
   let uniqueCourseMoves = Array.from(new Set(allCourseMoves));
 
@@ -121,4 +123,16 @@ async function loadJSON(path) {
 
 async function initializeData() {
   allcourses = await loadJSON("coursefiles/allcourses_pure.json");
+}
+
+function loadOptions() {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage({ method: "getOptions" }, function (response) {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve(response);
+      }
+    });
+  });
 }

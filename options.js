@@ -2,7 +2,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const checkboxes = document.querySelectorAll('input[type="checkbox"]');
 
   chrome.storage.sync.get(
-    ["removeNotifs", "extraDropdown", "filterToggle", "categoriesToggle"],
+    [
+      "removeNotifs",
+      "extraDropdown",
+      "filterToggle",
+      "categoriesToggle",
+      "sideAgnostic",
+    ],
     function (options) {
       checkboxes.forEach(function (checkbox) {
         checkbox.checked = options[checkbox.id];
