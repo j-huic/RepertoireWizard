@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html>
+  <link
+    rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+  />
   <head>
     <script src="options.js"></script>
   </head>
 
-  <body>
+  <body class="container mt-5">
     <h1>Options</h1>
+    <br />
 
     <div>
       <input type="checkbox" id="removeNotifs" name="checkbox" />
@@ -30,82 +35,141 @@
 
     <br />
 
-    <div>
+    <div class="form-group">
       <label for="varnameInput">Get Varname:</label>
-      <input type="text" id="varnameInput" name="textInput" />
-      <button id="varnameSubmit">Submit</button>
-      <button id="listVars">List Variables</button>
+      <input
+        type="text"
+        class="form-control"
+        id="varnameInput"
+        name="textInput"
+      />
+      <button class="btn btn-primary mt-2" id="varnameSubmit">Submit</button>
+      <button class="btn btn-info mt-2" id="listVars">List Variables</button>
     </div>
+
     <br />
-    <div>
-      <label for="varData">Repertoire Data:</label>
+
+    <div class="form-group">
+      <label for="blacklistInput">Filter Courses From the Dropdown</label>
       <textarea
+        class="form-control"
         rows="1"
         cols="20"
-        id="varData"
-        name="varData"
-        wrap="hard"
+        id="blacklistInput"
+        name="blacklistInput"
       ></textarea>
+      <input
+        class="btn btn-primary mt-2"
+        type="submit"
+        id="blacklistSubmit"
+        value="Submit"
+      />
+      <input
+        class="btn btn-info mt-2"
+        type="submit"
+        id="showBlacklist"
+        value="Show Blacklist"
+      />
+      <input
+        class="btn btn-secondary mt-2"
+        type="submit"
+        id="clearBlacklist"
+        value="Clear Blacklist"
+      />
+      <img src="assets/icon16.png" alt="Info" id="infoIcon" />
+      <!-- prettier-ignore -->
+      <div id="infoText" style="display: none">
+        Add blacklisted keywords to filter out unwanted courses. Enter separately or separate by commas.
+      </div>
     </div>
 
     <br />
 
-    <label for="blacklistInput">Filter Courses From the Dropdown</label>
-    <textarea
-      rows="1"
-      cols="20"
-      id="blacklistInput"
-      name="blacklistInput"
-    ></textarea>
-    <input type="submit" id="blacklistSubmit" value="Submit" />
-    <input type="submit" id="clearBlacklist" value="Clear Blacklist" />
-    <input type="submit" id="showBlacklist" value="Show Blacklist" />
-    <img src="assets/icon16.png" alt="Info" id="infoIcon" />
-    <div id="infoText" style="display: none">
-      Add blacklisted keywords to filter out unwanted courses. Enter separately
-      or separate by commas.
-    </div>
-
-    <br />
-    <br />
-    <div>
+    <div class="form-group">
       <label for="categoriesInput">Organize Courses by Category</label>
       <textarea
+        class="form-control"
         rows="1"
         cols="20"
         id="categoriesInput"
         name="categoriesInput"
         wrap="hard"
       ></textarea>
-      <input type="submit" id="categoriesSubmit" value="Submit" />
-      <input type="submit" id="clearCategories" value="Clear Categories" />
-      <input type="submit" id="showCategories" value="Show Categories" />
+      <input
+        class="btn btn-primary mt-2"
+        type="submit"
+        id="categoriesSubmit"
+        value="Submit"
+      />
+      <input
+        class="btn btn-info mt-2"
+        type="submit"
+        id="showCategories"
+        value="Show Categories"
+      />
+      <input
+        class="btn btn-secondary mt-2"
+        type="submit"
+        id="clearCategories"
+        value="Clear Categories"
+      />
       <img src="assets/icon16.png" alt="Info" id="infoIconCat" />
+      <!-- prettier-ignore -->
       <div id="infoTextCat" style="display: none">
-        Add dictionary with categories for keys and array of whitelisted words.
-        E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
+        Add dictionary with categories for keys and array of whitelisted words. E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
       </div>
     </div>
+
     <br />
-    <br />
-    <div>
+
+    <div class="form-group">
       <label for="renameInput">Rename Courses</label>
       <textarea
+        class="form-control"
         rows="1"
         cols="20"
         id="renameInput"
         name="renameInput"
-        wrap="soft"
+        wrap="hard"
       ></textarea>
-      <input type="submit" id="renameSubmit" value="Submit" />
-      <input type="submit" id="cleaRrename" value="Clear Rename" />
-      <input type="submit" id="showRename" value="Show Rename" />
+      <input
+        class="btn btn-primary mt-2"
+        type="submit"
+        id="renameSubmit"
+        value="Submit"
+      />
+      <input
+        class="btn btn-info mt-2"
+        type="submit"
+        id="showRename"
+        value="Show Rename"
+      />
+      <input
+        class="btn btn-secondary mt-2"
+        type="submit"
+        id="cleaRrename"
+        value="Clear Rename"
+      />
       <img src="assets/icon16.png" alt="Info" id="infoIconRename" />
       <div id="infoTextRename" style="display: none">
         Rename courses by adding dictionary with original course name as key and
         new name as value. E.g. {"Lifetime Repertoires: Sam Shankland's d4 -
         Part 1": "Shanland d4 - QGA/Slav"}
       </div>
+    </div>
+
+    <br />
+
+    <div class="form-group">
+      <label for="varData">Repertoire Data:</label>
+      <textarea
+        class="form-control"
+        rows="1"
+        cols="20"
+        id="varData"
+        name="varData"
+        wrap="hard"
+      ></textarea>
     </div>
   </body>
 </html>
