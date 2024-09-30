@@ -17,10 +17,6 @@
       <label for="removeNotifs">Hide Notification Alert</label>
     </div>
     <div>
-      <input type="checkbox" id="extraDropdown" name="checkbox" />
-      <label for="extraDropdown">Add Additional Dropdown Menu</label>
-    </div>
-    <div>
       <input type="checkbox" id="filterToggle" name="checkbox" />
       <label for="filterToggle">Toggle Course Filtering</label>
     </div>
@@ -78,8 +74,7 @@
       />
       <img src="assets/icon16.png" alt="Info" id="infoIcon" />
       <!-- prettier-ignore -->
-      <div id="infoText" style="display: none">
-        Add blacklisted keywords to filter out unwanted courses. Enter separately or separate by commas.
+      <div id="infoText" style="display: none">Add blacklisted keywords to filter out unwanted courses. Enter separately or separate by commas.
       </div>
     </div>
 
@@ -115,8 +110,7 @@
       />
       <img src="assets/icon16.png" alt="Info" id="infoIconCat" />
       <!-- prettier-ignore -->
-      <div id="infoTextCat" style="display: none">
-        Add dictionary with categories for keys and array of whitelisted words. E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
+      <div id="infoTextCat" style="display: none">Add dictionary with categories for keys and array of keywords. E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
       </div>
     </div>
 
@@ -151,10 +145,8 @@
         value="Clear Rename"
       />
       <img src="assets/icon16.png" alt="Info" id="infoIconRename" />
-      <div id="infoTextRename" style="display: none">
-        Rename courses by adding dictionary with original course name as key and
-        new name as value. E.g. {"Lifetime Repertoires: Sam Shankland's d4 -
-        Part 1": "Shanland d4 - QGA/Slav"}
+      <!-- prettier-ignore -->
+      <div id="infoTextRename" style="display: none">Rename courses by adding a dictionary with original course name as key and new name as value. E.g. {"Lifetime Repertoires: Sam Shankland's d4 - Part 1": "Shanland d4 - QGA/Slav"}
       </div>
     </div>
 

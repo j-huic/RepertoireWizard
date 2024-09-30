@@ -2,13 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const checkboxes = document.querySelectorAll('input[type="checkbox"]');
 
   chrome.storage.sync.get(
-    [
-      "removeNotifs",
-      "extraDropdown",
-      "filterToggle",
-      "categoriesToggle",
-      "sideAgnostic",
-    ],
+    ["removeNotifs", "filterToggle", "categoriesToggle", "sideAgnostic"],
     function (options) {
       checkboxes.forEach(function (checkbox) {
         checkbox.checked = options[checkbox.id];
@@ -152,9 +146,7 @@ document.addEventListener("DOMContentLoaded", function () {
     alert(infoTextCat.textContent);
   });
   infoIconRename.addEventListener("click", () => {
-    chrome.storage.sync.get("rename", function (storage) {
-      console.log(storage.rename);
-    });
+    alert(infoTextRename.textContent);
   });
 
   function submitBlacklist() {
