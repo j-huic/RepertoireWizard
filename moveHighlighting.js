@@ -24,11 +24,21 @@ let mainObserverTwo = new MutationObserver(() => {
 });
 
 let mainObserverAlt = new MutationObserver(() => {
+  explorerBox = document.getElementsByClassName("explorer-box")[0]; // makes the code only go off on analysis boards
+  if (!explorerBox) {
+    return;
+  }
+
   if (hasFenChanged()) {
     dataDiv = document.getElementsByClassName("data")[0];
 
     if (dataDiv && !dataDiv.className.includes("empty")) {
-      let observer = new MutationObserver(moveSelectorDisplay);
+      let observer = new MutationObserver((mutationList) => {
+        if (!hasManufacturedDeletions(mutationList)) {
+          deleteManufacturedElements();
+          moveSelectorDisplay();
+        }
+      });
       observer.observe(dataDiv, { childList: true, subtree: true });
     } else if (dataDiv && dataDiv.className.includes("empty")) {
       addMoveToEmpty();
@@ -48,6 +58,23 @@ mainObserverAlt.observe(document, { childList: true, subtree: true });
 observerStatic.observe(document, { childList: true, subtree: true });
 
 // functions
+
+function hasManufacturedDeletions(mutationList) {
+  for (const mutation of mutationList) {
+    if (mutation.type === "childList" && mutation.removedNodes.length > 0) {
+      for (const node of mutation.removedNodes) {
+        if (
+          node.nodeType === 1 &&
+          node.getAttribute("origin") === "manufactured"
+        ) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
 
 function debounce(func, wait = 10) {
   let timeout;
@@ -72,23 +99,21 @@ function addMoveToEmpty() {
     movesDiv.className = "moves";
     newHeader.innerHTML = getHeaderHTML();
     movesDiv.appendChild(newHeader);
-    j;
     empty.appendChild(movesDiv);
   }
 
   let fen = getFen();
-  moves = moveRecommendationsFromFen(fen);
+  recommendedMoves = moveRecommendationsFromFen(fen);
 
-  if (moves.length === 0) {
+  if (recommendedMoves.length === 0) {
     return;
   } else {
     let newTbody = document.createElement("tbody");
     newTbody.setAttribute("data-fen", fen);
 
-    for (let move of moves) {
-      let tr = document.createElement("tr");
-      tr.innerHTML = getMoveCardHTML(move);
-      newTbody.appendChild(tr);
+    for (let move of recommendedMoves) {
+      let moveCard = createMoveCard(move);
+      newTbody.appendChild(moveCard);
     }
 
     movesDiv.appendChild(newTbody);
@@ -96,16 +121,41 @@ function addMoveToEmpty() {
 }
 
 function moveSelectorDisplay(bla = null) {
+  // deleteManufacturedElements();
   fen = getFen();
   let tbody = document.getElementsByTagName("tbody")[0];
-  let uniqueCourseMoves = moveRecommendationsFromFen(fen);
+  let uniqueCourseMoves = new Set(moveRecommendationsFromFen(fen));
 
   for (let move of tbody.children) {
-    moveText = move.getElementsByTagName("td")[0].textContent;
-    if (uniqueCourseMoves.includes(moveText)) {
+    let moveText = move.getElementsByTagName("td")[0].textContent;
+    if (uniqueCourseMoves.has(moveText)) {
       move.getElementsByTagName("td")[0].style.color = "red";
+      uniqueCourseMoves.delete(moveText);
     }
   }
+
+  if (uniqueCourseMoves.size > 0) {
+    for (let move of uniqueCourseMoves) {
+      moveCard = createMoveCard(move);
+      tbody.appendChild(moveCard);
+    }
+  }
+}
+
+function createMoveCard(move) {
+  let tr = document.createElement("tr");
+  tr.setAttribute("origin", "manufactured");
+  tr.innerHTML = getMoveCardHTML(move);
+  return tr;
+}
+
+function deleteManufacturedElements() {
+  let elements = document.querySelectorAll("[origin='manufactured']");
+  elements.forEach((element) => {
+    // console.log(element.innerHTML);
+    // element.parentNode.removeChild(element);
+    element.remove();
+  });
 }
 
 function moveRecommendationsFromFen(fen) {
