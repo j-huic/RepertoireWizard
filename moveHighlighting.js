@@ -40,10 +40,10 @@ let mainObserverAlt = new MutationObserver(() => {
           if (!dataDiv.className.includes("empty")) {
             deleteManufacturedElements();
             moveSelectorDisplay();
+          } else {
+            console.log("add to empty");
+            addMoveToEmpty();
           }
-        } else {
-          console.log("add to empty");
-          addMoveToEmpty();
         }
       }
     });
@@ -78,13 +78,14 @@ function moveSelectorDisplay() {
   }
   if (uniqueCourseMoves.size > 0) {
     for (let move of uniqueCourseMoves) {
-      moveCard = createMoveCard(move);
+      moveCard = createMoveCard(move, fen);
       tbody.appendChild(moveCard);
     }
   }
 }
 
 function addMoveToEmpty() {
+  console.log("adding to empty");
   let empty = document.getElementsByClassName("data empty")[0];
   let msg = empty.getElementsByClassName("message")[0];
   if (msg) {
@@ -110,7 +111,7 @@ function addMoveToEmpty() {
     newTbody.setAttribute("data-fen", fen);
 
     for (let move of recommendedMoves) {
-      let moveCard = createMoveCard(move);
+      let moveCard = createMoveCard(move, fen);
       newTbody.appendChild(moveCard);
     }
 
@@ -146,8 +147,16 @@ function displayMoves(fen, sideAgnostic = false) {
   return displays;
 }
 
-function createMoveCard(move) {
+function createMoveCard(move, fen) {
   let tr = document.createElement("tr");
+  chrome.runtime.sendMessage(
+    { method: "getUCI", fen: fen, move: move },
+    (response) => {
+      if (response) {
+        tr.setAttribute("data-uci", response);
+      }
+    }
+  );
   tr.setAttribute("origin", "manufactured");
   tr.innerHTML = getMoveCardHTML(move);
   return tr;
@@ -181,6 +190,7 @@ function hasFenChanged() {
   let newFen = getFen();
   if (newFen !== oldFen) {
     oldFen = newFen;
+    console.log("fen changed");
     return true;
   } else {
     return false;

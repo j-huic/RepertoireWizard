@@ -27,9 +27,21 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       sendResponse(repertoires);
     });
     return true;
+  } else if (request.method === "getUCI") {
+    handleGetUCI(request.fen, request.move, sendResponse);
   }
   return true;
 });
+
+function handleGetUCI(fen, algMove, sendResponse) {
+  let chess = new Chess(fen);
+  let move = chess.move(algMove);
+  if (move) {
+    sendResponse(move.from + move.to);
+  } else {
+    sendResponse(null);
+  }
+}
 
 function handleGetOptions(sendResponse) {
   let options = [
