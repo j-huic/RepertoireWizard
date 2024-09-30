@@ -1,29 +1,9 @@
 var oldFen = "";
 var allcourses = {};
 var options = {};
-initializeData();
+initializeCourseData();
 
 let mainObserver = new MutationObserver(() => {
-  tbody = document.querySelector("tbody");
-
-  if (tbody && tbody.attributes["data-fen"]) {
-    let observer = new MutationObserver(checkFenChange);
-    let config = { attributes: true, subtree: true };
-    observer.observe(tbody, config);
-  }
-});
-
-let mainObserverTwo = new MutationObserver(() => {
-  explorer = document.getElementsByClassName("data")[0];
-
-  if (explorer) {
-    let observer = new MutationObserver(checkFenChange);
-    let config = { attributes: true, subtree: true };
-    observer.observe(explorer, config);
-  }
-});
-
-let mainObserverAlt = new MutationObserver(() => {
   explorerBox = document.getElementsByClassName("explorer-box")[0]; // makes the code only go off on analysis boards
   if (!explorerBox) {
     return;
@@ -46,6 +26,31 @@ let mainObserverAlt = new MutationObserver(() => {
   }
 });
 
+let mainObserverAlt = new MutationObserver(() => {
+  explorerBox = document.getElementsByClassName("explorer-box")[0]; // makes the code only go off on analysis boards
+  if (!explorerBox) {
+    return;
+  }
+
+  dataDiv = document.getElementsByClassName("data")[0];
+  if (dataDiv) {
+    let observer = new MutationObserver((mutationList) => {
+      if (hasFenChanged()) {
+        if (!hasManufacturedDeletions(mutationList)) {
+          if (!dataDiv.className.includes("empty")) {
+            deleteManufacturedElements();
+            moveSelectorDisplay();
+          }
+        } else {
+          console.log("add to empty");
+          addMoveToEmpty();
+        }
+      }
+    });
+    observer.observe(dataDiv, { childList: true, subtree: true });
+  }
+});
+
 let observerStatic = new MutationObserver(function (mutations) {
   let wiki = document.getElementsByClassName("analyse__wiki empty")[0];
   if (wiki) {
@@ -59,31 +64,24 @@ observerStatic.observe(document, { childList: true, subtree: true });
 
 // functions
 
-function hasManufacturedDeletions(mutationList) {
-  for (const mutation of mutationList) {
-    if (mutation.type === "childList" && mutation.removedNodes.length > 0) {
-      for (const node of mutation.removedNodes) {
-        if (
-          node.nodeType === 1 &&
-          node.getAttribute("origin") === "manufactured"
-        ) {
-          return true;
-        }
-      }
+function moveSelectorDisplay() {
+  fen = getFen();
+  let tbody = document.getElementsByTagName("tbody")[0];
+  let uniqueCourseMoves = new Set(moveRecommendationsFromFen(fen));
+
+  for (let move of tbody.children) {
+    let moveText = move.getElementsByTagName("td")[0].textContent;
+    if (uniqueCourseMoves.has(moveText)) {
+      move.getElementsByTagName("td")[0].style.color = "red";
+      uniqueCourseMoves.delete(moveText);
     }
   }
-
-  return false;
-}
-
-function debounce(func, wait = 10) {
-  let timeout;
-  return function (...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      func.apply(this, args);
-    }, wait);
-  };
+  if (uniqueCourseMoves.size > 0) {
+    for (let move of uniqueCourseMoves) {
+      moveCard = createMoveCard(move);
+      tbody.appendChild(moveCard);
+    }
+  }
 }
 
 function addMoveToEmpty() {
@@ -120,56 +118,11 @@ function addMoveToEmpty() {
   }
 }
 
-function moveSelectorDisplay(bla = null) {
-  // deleteManufacturedElements();
-  fen = getFen();
-  let tbody = document.getElementsByTagName("tbody")[0];
-  let uniqueCourseMoves = new Set(moveRecommendationsFromFen(fen));
-
-  for (let move of tbody.children) {
-    let moveText = move.getElementsByTagName("td")[0].textContent;
-    if (uniqueCourseMoves.has(moveText)) {
-      move.getElementsByTagName("td")[0].style.color = "red";
-      uniqueCourseMoves.delete(moveText);
-    }
-  }
-
-  if (uniqueCourseMoves.size > 0) {
-    for (let move of uniqueCourseMoves) {
-      moveCard = createMoveCard(move);
-      tbody.appendChild(moveCard);
-    }
-  }
-}
-
-function createMoveCard(move) {
-  let tr = document.createElement("tr");
-  tr.setAttribute("origin", "manufactured");
-  tr.innerHTML = getMoveCardHTML(move);
-  return tr;
-}
-
-function deleteManufacturedElements() {
-  let elements = document.querySelectorAll("[origin='manufactured']");
-  elements.forEach((element) => {
-    // console.log(element.innerHTML);
-    // element.parentNode.removeChild(element);
-    element.remove();
-  });
-}
-
 function moveRecommendationsFromFen(fen) {
   let courseMoves = displayMoves(getPureFen(fen), options.sideAgnostic);
   let allCourseMoves = Object.values(courseMoves).flat();
   let uniqueCourseMoves = Array.from(new Set(allCourseMoves));
   return uniqueCourseMoves;
-}
-
-function getSide() {
-  black = document.getElementsByClassName(
-    "cg-wrap cgv1 manipulable orientation-black"
-  );
-  return black.length === 1 ? "black" : "white";
 }
 
 function displayMoves(fen, sideAgnostic = false) {
@@ -193,13 +146,45 @@ function displayMoves(fen, sideAgnostic = false) {
   return displays;
 }
 
-function getFenOld() {
-  let tbody = document.querySelector("tbody");
-  if (!tbody) {
-    return null;
+function createMoveCard(move) {
+  let tr = document.createElement("tr");
+  tr.setAttribute("origin", "manufactured");
+  tr.innerHTML = getMoveCardHTML(move);
+  return tr;
+}
+
+function hasManufacturedDeletions(mutationList) {
+  for (const mutation of mutationList) {
+    if (mutation.type === "childList" && mutation.removedNodes.length > 0) {
+      for (const node of mutation.removedNodes) {
+        if (
+          node.nodeType === 1 &&
+          node.getAttribute("origin") === "manufactured"
+        ) {
+          return true;
+        }
+      }
+    }
   }
-  let fen = tbody.attributes[0].value;
-  return fen;
+
+  return false;
+}
+
+function deleteManufacturedElements() {
+  let elements = document.querySelectorAll("[origin='manufactured']");
+  elements.forEach((element) => {
+    element.remove();
+  });
+}
+
+function hasFenChanged() {
+  let newFen = getFen();
+  if (newFen !== oldFen) {
+    oldFen = newFen;
+    return true;
+  } else {
+    return false;
+  }
 }
 
 function getFen() {
@@ -220,60 +205,28 @@ function getFen() {
   return null;
 }
 
-function onMutation(mutationList) {
-  console.log("A mutation occurred:", mutationList);
-  console.log("________________________________");
-  console.log("________________________________");
-}
-
-function onFenChange(mutationList) {
-  let fenChanged = false;
-  mutationList.forEach((mutation) => {
-    if (
-      mutation.type === "attributes" &&
-      mutation.attributeName === "data-fen"
-    ) {
-      fenChanged = true;
-    }
-  });
-  if (fenChanged) {
-    let newFen = getFen();
-    console.log(newFen);
-  }
-}
-
-function checkFenChange() {
-  let newFen = getFen();
-  if (newFen !== oldFen) {
-    moveSelectorDisplay();
-    oldFen = newFen;
-  }
-}
-
-function hasFenChanged() {
-  let newFen = getFen();
-  if (newFen !== oldFen) {
-    oldFen = newFen;
-    return true;
-  } else {
-    return false;
-  }
-}
-
 function getPureFen(fen) {
   let split = fen.split(" ");
   let newFen = split.slice(0, split.length - 2).join(" ");
   return newFen;
 }
 
+function getSide() {
+  black = document.getElementsByClassName(
+    "cg-wrap cgv1 manipulable orientation-black"
+  );
+  return black.length === 1 ? "black" : "white";
+}
+
+async function initializeCourseData() {
+  allcourses = await loadJSON("coursefiles/allcourses_pure.json");
+  options = await loadOptions();
+}
+
 async function loadJSON(path) {
   const response = await fetch(chrome.runtime.getURL(path));
   const json = await response.json();
   return json;
-}
-
-async function initializeData() {
-  allcourses = await loadJSON("coursefiles/allcourses_pure.json");
 }
 
 function loadOptions() {
@@ -288,31 +241,64 @@ function loadOptions() {
   });
 }
 
-async function onReady(document, callback) {
-  if (callback && typeof callback === "function") {
-    if (
-      document.readyState === "complete" ||
-      document.readyState === "interactive"
-    ) {
-      callback();
-    } else {
-      document.addEventListener("DOMContentLoaded", callback);
-    }
-  }
-}
+// function getFenOld() {
+//   let tbody = document.querySelector("tbody");
+//   if (!tbody) {
+//     return null;
+//   }
+//   let fen = tbody.attributes[0].value;
+//   return fen;
+// }
 
-function getFenBox() {
-  let fenBox = document.querySelector("input.copyable");
-  if (fenBox) {
-    return fenBox;
-  } else {
-    let fenBoxAlt = document.querySelector("input.copy-me__target");
-    if (fenBoxAlt) {
-      return fenBoxAlt;
-    }
-  }
-  return null;
-}
+// async function onReady(document, callback) {
+//   if (callback && typeof callback === "function") {
+//     if (
+//       document.readyState === "complete" ||
+//       document.readyState === "interactive"
+//     ) {
+//       callback();
+//     } else {
+//       document.addEventListener("DOMContentLoaded", callback);
+//     }
+//   }
+// }
+
+// function getFenBox() {
+//   let fenBox = document.querySelector("input.copyable");
+//   if (fenBox) {
+//     return fenBox;
+//   } else {
+//     let fenBoxAlt = document.querySelector("input.copy-me__target");
+//     if (fenBoxAlt) {
+//       return fenBoxAlt;
+//     }
+//   }
+//   return null;
+// }
+
+// function onFenChange(mutationList) {
+//   let fenChanged = false;
+//   mutationList.forEach((mutation) => {
+//     if (
+//       mutation.type === "attributes" &&
+//       mutation.attributeName === "data-fen"
+//     ) {
+//       fenChanged = true;
+//     }
+//   });
+//   if (fenChanged) {
+//     let newFen = getFen();
+//     console.log(newFen);
+//   }
+// }
+
+// function checkFenChange() {
+//   let newFen = getFen();
+//   if (newFen !== oldFen) {
+//     moveSelectorDisplay();
+//     oldFen = newFen;
+//   }
+// }
 
 function getMoveCardHTML(move) {
   return `
