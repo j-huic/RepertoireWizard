@@ -1,56 +1,36 @@
 var oldFen = "";
 var allcourses = {};
 var options = {};
-initializeCourseData();
+initializeData();
 
+// top level observer which triggers the inner observer when the explorer tab is open
 let mainObserver = new MutationObserver(() => {
-  explorerBox = document.getElementsByClassName("explorer-box")[0]; // makes the code only go off on analysis boards
-  if (!explorerBox) {
-    return;
-  }
-
-  if (hasFenChanged()) {
-    dataDiv = document.getElementsByClassName("data")[0];
-
-    if (dataDiv && !dataDiv.className.includes("empty")) {
-      let observer = new MutationObserver((mutationList) => {
-        if (!hasManufacturedDeletions(mutationList)) {
-          deleteManufacturedElements();
-          moveSelectorDisplay();
-        }
-      });
-      observer.observe(dataDiv, { childList: true, subtree: true });
-    } else if (dataDiv && dataDiv.className.includes("empty")) {
-      addMoveToEmpty();
-    }
-  }
-});
-
-let mainObserverAlt = new MutationObserver(() => {
-  explorerBox = document.getElementsByClassName("explorer-box")[0]; // makes the code only go off on analysis boards
+  explorerBox = document.getElementsByClassName("explorer-box")[0];
   if (!explorerBox) {
     return;
   }
 
   dataDiv = document.getElementsByClassName("data")[0];
   if (dataDiv) {
-    let observer = new MutationObserver((mutationList) => {
-      if (hasFenChanged()) {
-        if (!hasManufacturedDeletions(mutationList)) {
-          if (!dataDiv.className.includes("empty")) {
-            deleteManufacturedElements();
-            moveSelectorDisplay();
-          } else {
-            console.log("add to empty");
-            addMoveToEmpty();
-          }
-        }
-      }
-    });
-    observer.observe(dataDiv, { childList: true, subtree: true });
+    innerObserver.observe(dataDiv, { childList: true, subtree: true });
   }
 });
 
+// inner observer triggers with fen change and calls appropriate functions
+var innerObserver = new MutationObserver((mutationList) => {
+  if (hasFenChanged()) {
+    if (!hasManufacturedDeletions(mutationList)) {
+      if (!dataDiv.className.includes("empty")) {
+        deleteManufacturedElements();
+        highlightExplorerMoves();
+      } else {
+        addMoveToEmpty();
+      }
+    }
+  }
+});
+
+// removes wiki tab
 let observerStatic = new MutationObserver(function (mutations) {
   let wiki = document.getElementsByClassName("analyse__wiki empty")[0];
   if (wiki) {
@@ -59,12 +39,12 @@ let observerStatic = new MutationObserver(function (mutations) {
   }
 });
 
-mainObserverAlt.observe(document, { childList: true, subtree: true });
+mainObserver.observe(document, { childList: true, subtree: true });
 observerStatic.observe(document, { childList: true, subtree: true });
 
 // functions
-
-function moveSelectorDisplay() {
+// top level function which checks and highlights explorer moves against course data for current position
+function highlightExplorerMoves() {
   fen = getFen();
   let tbody = document.getElementsByTagName("tbody")[0];
   let uniqueCourseMoves = new Set(moveRecommendationsFromFen(fen));
@@ -84,8 +64,8 @@ function moveSelectorDisplay() {
   }
 }
 
+// if there are no known moves for the current FEN, add the moves to the empty div
 function addMoveToEmpty() {
-  console.log("adding to empty");
   let empty = document.getElementsByClassName("data empty")[0];
   let msg = empty.getElementsByClassName("message")[0];
   if (msg) {
@@ -119,6 +99,7 @@ function addMoveToEmpty() {
   }
 }
 
+// returns list of unique course moves for the given FEN
 function moveRecommendationsFromFen(fen) {
   let courseMoves = displayMoves(getPureFen(fen), options.sideAgnostic);
   let allCourseMoves = Object.values(courseMoves).flat();
@@ -126,6 +107,7 @@ function moveRecommendationsFromFen(fen) {
   return uniqueCourseMoves;
 }
 
+// takes a FEN and returns the course data
 function displayMoves(fen, sideAgnostic = false) {
   let courseColors = {
     white: ["d4", "catalan"],
@@ -162,6 +144,7 @@ function createMoveCard(move, fen) {
   return tr;
 }
 
+// checks if the mutation list contains a deletion of a manufactured element
 function hasManufacturedDeletions(mutationList) {
   for (const mutation of mutationList) {
     if (mutation.type === "childList" && mutation.removedNodes.length > 0) {
@@ -186,17 +169,18 @@ function deleteManufacturedElements() {
   });
 }
 
+// checks if the FEN has changed since the last check
 function hasFenChanged() {
   let newFen = getFen();
   if (newFen !== oldFen) {
     oldFen = newFen;
-    console.log("fen changed");
     return true;
   } else {
     return false;
   }
 }
 
+// gets the FEN from the tbody if it exists, otherwise from the input box (latter is slower)
 function getFen() {
   tbody = document.querySelector("tbody");
   if (tbody) {
@@ -215,6 +199,7 @@ function getFen() {
   return null;
 }
 
+// cuts off the part of FEN which hurts transposition recognition
 function getPureFen(fen) {
   let split = fen.split(" ");
   let newFen = split.slice(0, split.length - 2).join(" ");
@@ -228,7 +213,7 @@ function getSide() {
   return black.length === 1 ? "black" : "white";
 }
 
-async function initializeCourseData() {
+async function initializeData() {
   allcourses = await loadJSON("coursefiles/allcourses_pure.json");
   options = await loadOptions();
 }
@@ -250,65 +235,6 @@ function loadOptions() {
     });
   });
 }
-
-// function getFenOld() {
-//   let tbody = document.querySelector("tbody");
-//   if (!tbody) {
-//     return null;
-//   }
-//   let fen = tbody.attributes[0].value;
-//   return fen;
-// }
-
-// async function onReady(document, callback) {
-//   if (callback && typeof callback === "function") {
-//     if (
-//       document.readyState === "complete" ||
-//       document.readyState === "interactive"
-//     ) {
-//       callback();
-//     } else {
-//       document.addEventListener("DOMContentLoaded", callback);
-//     }
-//   }
-// }
-
-// function getFenBox() {
-//   let fenBox = document.querySelector("input.copyable");
-//   if (fenBox) {
-//     return fenBox;
-//   } else {
-//     let fenBoxAlt = document.querySelector("input.copy-me__target");
-//     if (fenBoxAlt) {
-//       return fenBoxAlt;
-//     }
-//   }
-//   return null;
-// }
-
-// function onFenChange(mutationList) {
-//   let fenChanged = false;
-//   mutationList.forEach((mutation) => {
-//     if (
-//       mutation.type === "attributes" &&
-//       mutation.attributeName === "data-fen"
-//     ) {
-//       fenChanged = true;
-//     }
-//   });
-//   if (fenChanged) {
-//     let newFen = getFen();
-//     console.log(newFen);
-//   }
-// }
-
-// function checkFenChange() {
-//   let newFen = getFen();
-//   if (newFen !== oldFen) {
-//     moveSelectorDisplay();
-//     oldFen = newFen;
-//   }
-// }
 
 function getMoveCardHTML(move) {
   return `
