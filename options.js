@@ -33,10 +33,9 @@ document.addEventListener("DOMContentLoaded", function () {
   renameInput = document.getElementById("renameInput");
   renameSubmit = document.getElementById("renameSubmit");
 
-  varnameInput = document.getElementById("varnameInput");
-  varnameSubmit = document.getElementById("varnameSubmit");
-  varData = document.getElementById("varData");
-  listVars = document.getElementById("listVars");
+  fileInput = document.getElementById("fileInput");
+  uploadButton = document.getElementById("uploadFileButton");
+  fileStatusMessage = document.getElementById("fileStatusMessage");
 
   chrome.storage.sync.get(
     ["blacklist", "categories", "rename"],
@@ -47,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       function resizeInput(input, obj) {
         input.value = JSON.stringify(obj, null, 2);
-        input.style.whiteSpace = "pre"; // Preserve formatting
+        input.style.whiteSpace = "pre";
         input.style.width = "auto";
         input.style.height = "auto";
         input.style.width = input.scrollWidth + "px";
@@ -64,14 +63,23 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   );
 
-  varnameSubmit.addEventListener("click", submitVarname);
-  varnameInput.addEventListener("keydown", function (event) {
-    if (event.keyCode === 13) {
-      event.preventDefault();
-      submitVarname();
+  chrome.storage.local.get(
+    ["courseData", "courseDataFilename", "courseDataTimestamp"],
+    function (result) {
+      if (result.courseData) {
+        fileStatusMessage.textContent = "Course data file already exists";
+      }
+      if (result.courseDataFilename) {
+        fileStatusMessage.textContent += ": " + result.courseDataFilename;
+      }
+      if (result.courseDataTimestamp) {
+        fileStatusMessage.textContent +=
+          " (" + result.courseDataTimestamp + ")";
+      }
     }
-  });
-  listVars.addEventListener("click", listAllSyncVariables);
+  );
+
+  uploadButton.addEventListener("click", uploadFile);
 
   blacklistSubmit.addEventListener("click", submitBlacklist);
   blacklistInput.addEventListener("keydown", function (event) {
@@ -149,6 +157,36 @@ document.addEventListener("DOMContentLoaded", function () {
     alert(infoTextRename.textContent);
   });
 
+  function uploadFile() {
+    const file = fileInput.files[0];
+    if (file && file.type === "application/json") {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const jsonData = JSON.parse(e.target.result);
+          const fileName = file.name;
+          const timestamp = new Date().toLocaleString();
+
+          chrome.storage.local.set(
+            {
+              courseData: jsonData,
+              courseDataFilename: fileName,
+              courseDataTimestamp: timestamp,
+            },
+            () => {
+              alert("File uploaded successfully");
+            }
+          );
+        } catch (error) {
+          alert("Error parsing file: " + error);
+        }
+      };
+      reader.readAsText(file);
+    } else {
+      alert("Please upload a valid JSON file");
+    }
+  }
+
   function submitBlacklist() {
     blacklistInput.style.height = "auto";
     blacklistInput.style.height = blacklistInput.scrollHeight + "px";
@@ -199,44 +237,5 @@ document.addEventListener("DOMContentLoaded", function () {
     } else return;
 
     chrome.storage.sync.set({ rename: newRename }, function () {});
-  }
-
-  function submitVarname() {
-    let storage;
-    let varName;
-    input = varnameInput.value;
-
-    [storage, varName] = input.includes(":")
-      ? input.split(":")
-      : ["local", input];
-
-    if (storage === "sync") {
-      chrome.storage.sync.get([varName], function (items) {
-        if (items[varName] === undefined) {
-          alert('No variable found with the name: "' + varName + '"');
-          return;
-        }
-        varData.textContent = JSON.stringify(items[varName], null, 2);
-      });
-    } else if (storage === "local") {
-      chrome.storage.local.get([varName], function (items) {
-        if (items[varName] === undefined) {
-          alert('No variable found with the name: "' + varName + '"');
-          return;
-        }
-        varData.textContent = JSON.stringify(items[varName], null, 2);
-      });
-    } else {
-      alert('Invalid storage type: "' + storage + '"');
-    }
-  }
-
-  function listAllSyncVariables() {
-    chrome.storage.sync.get(null, function (items) {
-      console.log("All variables in sync storage:", items);
-    });
-    chrome.storage.local.get(null, function (items) {
-      console.log("All variables in local storage:", items);
-    });
   }
 });

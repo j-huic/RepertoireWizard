@@ -32,20 +32,6 @@
     <br />
 
     <div class="form-group">
-      <label for="varnameInput">Get Varname:</label>
-      <input
-        type="text"
-        class="form-control"
-        id="varnameInput"
-        name="textInput"
-      />
-      <button class="btn btn-primary mt-2" id="varnameSubmit">Submit</button>
-      <button class="btn btn-info mt-2" id="listVars">List Variables</button>
-    </div>
-
-    <br />
-
-    <div class="form-group">
       <label for="blacklistInput">Filter Courses From the Dropdown</label>
       <textarea
         class="form-control"
@@ -153,15 +139,15 @@
     <br />
 
     <div class="form-group">
-      <label for="varData">Repertoire Data:</label>
-      <textarea
-        class="form-control"
-        rows="1"
-        cols="20"
-        id="varData"
-        name="varData"
-        wrap="hard"
-      ></textarea>
+      <label for="fileInput">Upload Course Recommendation Data</label>
+      <input
+        type="file"
+        id="fileInput"
+        class="form-control-file"
+        accept=".json"
+      />
+      <div id="fileStatusMessage" class="mt-2"></div>
+      <button id="uploadFileButton" class="btn btn-primary mt-2">Upload</button>
     </div>
   </body>
 </html>

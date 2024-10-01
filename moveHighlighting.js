@@ -214,7 +214,8 @@ function getSide() {
 }
 
 async function initializeData() {
-  allcourses = await loadJSON("coursefiles/allcourses_pure.json");
+  // allcourses = await loadJSON("coursefiles/allcourses_pure.json");
+  allcourses = await loadJSONfromLocal();
   options = await loadOptions();
 }
 
@@ -222,6 +223,18 @@ async function loadJSON(path) {
   const response = await fetch(chrome.runtime.getURL(path));
   const json = await response.json();
   return json;
+}
+
+async function loadJSONfromLocal() {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get("courseData", function (result) {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve(result.courseData);
+      }
+    });
+  });
 }
 
 function loadOptions() {
