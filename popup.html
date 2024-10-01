@@ -1,21 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8" />
     <title>Popup</title>
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      @keyframes rainbow {
+        0% {
+          color: red;
+        }
+        14% {
+          color: orange;
+        }
+        28% {
+          color: yellow;
+        }
+        42% {
+          color: green;
+        }
+        57% {
+          color: blue;
+        }
+        71% {
+          color: indigo;
+        }
+        85% {
+          color: violet;
+        }
+        100% {
+          color: red;
+        }
+      }
+      .rainbow-text {
+        animation: rainbow 5s infinite;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+    </style>
   </head>
-  <body>
-    <h1>Repertoire Helper</h1>
-    <div>
-      <span id="fenLabel">FEN:</span>
-      <input type="text" id="fenInput" aria-labelledby="fenLabel" />
+  <body
+    style="
+      background: url('assets/icon128.png') no-repeat center center;
+      background-size: cover;
+    "
+  >
+    <div class="container text-center mt-3 pb-3">
+      <h1 class="h5 rainbow-text">Repertoire Daddy</h1>
+      <button id="settingsButton" class="btn btn-primary mt-2">
+        <i class="fas fa-cog"></i>
+      </button>
     </div>
-    <br />
-    <button id="fetchButton">fetch</button>
-
-    <br />
-    <br />
-
-    <button id="testButton">Test</button>
     <script src="popup.js"></script>
   </body>
 </html>
