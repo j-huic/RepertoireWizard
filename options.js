@@ -1,105 +1,72 @@
 document.addEventListener("DOMContentLoaded", function () {
   const checkboxes = document.querySelectorAll('input[type="checkbox"]');
 
-  chrome.storage.sync.get(
-    ["removeNotifs", "filterToggle", "categoriesToggle", "sideAgnostic"],
-    function (options) {
-      checkboxes.forEach(function (checkbox) {
-        checkbox.checked = options[checkbox.id];
-      });
-    }
-  );
+  initializeCheckboxes();
+  addCheckboxListeners();
 
-  checkboxes.forEach((checkbox) => {
-    checkbox.addEventListener("change", function (event) {
-      let obj = {};
-      obj[event.target.id] = event.target.checked;
-      chrome.storage.sync.set(obj, function () {
-        console.log(
-          `Option ${event.target.id} set to ${event.target.checked} and saved to chrome storage`
-        );
-      });
-    });
-  });
+  const blacklistInput = document.getElementById("blacklistInput");
+  const blacklistSubmit = document.getElementById("blacklistSubmit");
+  const clearBlacklist = document.getElementById("clearBlacklist");
 
-  blacklistInput = document.getElementById("blacklistInput");
-  blacklistSubmit = document.getElementById("blacklistSubmit");
-  clearBlacklist = document.getElementById("clearBlacklist");
+  const categoriesInput = document.getElementById("categoriesInput");
+  const categoriesSubmit = document.getElementById("categoriesSubmit");
+  const clearCategories = document.getElementById("clearCategories");
 
-  categoriesInput = document.getElementById("categoriesInput");
-  categoriesSubmit = document.getElementById("categoriesSubmit");
-  clearCategories = document.getElementById("clearCategories");
+  const renameInput = document.getElementById("renameInput");
+  const renameSubmit = document.getElementById("renameSubmit");
+  const clearRename = document.getElementById("clearRename");
 
-  renameInput = document.getElementById("renameInput");
-  renameSubmit = document.getElementById("renameSubmit");
-
-  fileInput = document.getElementById("fileInput");
-  uploadButton = document.getElementById("uploadFileButton");
-  fileStatusMessage = document.getElementById("fileStatusMessage");
+  const fileInput = document.getElementById("fileInput");
+  const uploadButton = document.getElementById("uploadFileButton");
+  const fileStatusMessage = document.getElementById("fileStatusMessage");
 
   chrome.storage.sync.get(
     ["blacklist", "categories", "rename"],
     function (storage) {
-      blacklistInput.value = storage.blacklist;
+      blacklistInput.value = storage.blacklist.join(", ");
+      categoriesInput.value = JSON.stringify(storage.categories, null, 2);
+      renameInput.value = JSON.stringify(storage.rename, null, 2);
+
       blacklistInput.style.height = "auto";
       blacklistInput.style.height = blacklistInput.scrollHeight + "px";
-
-      function resizeInput(input, obj) {
-        input.value = JSON.stringify(obj, null, 2);
-        input.style.whiteSpace = "pre";
-        input.style.width = "auto";
-        input.style.height = "auto";
-        input.style.width = input.scrollWidth + "px";
-        input.style.height = input.scrollHeight + "px";
-      }
-
-      categoriesInput.value = JSON.stringify(storage.categories, null, 2);
-      categoriesInput.style.height = "auto";
-      categoriesInput.style.height = categoriesInput.scrollHeight + "px";
       resizeInput(categoriesInput, storage.categories);
-
-      renameInput.value = JSON.stringify(storage.rename, null, 2);
       resizeInput(renameInput, storage.rename);
     }
   );
 
   chrome.storage.local.get(
     ["courseData", "courseDataFilename", "courseDataTimestamp"],
-    function (result) {
-      if (result.courseData) {
-        fileStatusMessage.textContent = "Course data file already exists";
-      }
-      if (result.courseDataFilename) {
-        fileStatusMessage.textContent += ": " + result.courseDataFilename;
-      }
-      if (result.courseDataTimestamp) {
-        fileStatusMessage.textContent +=
-          " (" + result.courseDataTimestamp + ")";
+    function (storage) {
+      if (storage) {
+        fileStatusMessage.textContent =
+          "Course data file already exists: " +
+          storage.courseDataFilename +
+          " (" +
+          storage.courseDataTimestamp +
+          ")";
       }
     }
   );
 
+  blacklistSubmit.addEventListener("click", submitBlacklist);
+  categoriesSubmit.addEventListener("click", submitCategories);
+  renameSubmit.addEventListener("click", submitRename);
   uploadButton.addEventListener("click", uploadFile);
 
-  blacklistSubmit.addEventListener("click", submitBlacklist);
   blacklistInput.addEventListener("keydown", function (event) {
-    if (event.keyCode === 13) {
+    if (event.key === "Enter") {
       event.preventDefault();
       submitBlacklist();
     }
   });
-
-  categoriesSubmit.addEventListener("click", submitCategories);
   categoriesInput.addEventListener("keydown", function (event) {
-    if (event.keyCode === 13) {
+    if (event.key === "Enter") {
       event.preventDefault();
       submitCategories();
     }
   });
-
-  renameSubmit.addEventListener("click", submitRename);
   renameInput.addEventListener("keydown", function (event) {
-    if (event.keyCode === 13) {
+    if (event.key === "Enter") {
       event.preventDefault();
       submitRename();
     }
@@ -108,47 +75,28 @@ document.addEventListener("DOMContentLoaded", function () {
   clearBlacklist.addEventListener("click", function () {
     chrome.storage.sync.set({ blacklist: [] }, function () {
       blacklistInput.value = "";
-      console.log("Blacklist cleared");
     });
   });
-
   clearCategories.addEventListener("click", function () {
     chrome.storage.sync.set({ categories: {} }, function () {
-      console.log("Categories cleared");
+      categoriesInput.value = "";
+    });
+  });
+  clearRename.addEventListener("click", function () {
+    chrome.storage.sync.set({ rename: {} }, function () {
+      renameInput.value = "";
     });
   });
 
-  showBlacklist.addEventListener("click", function () {
-    chrome.storage.sync.get("blacklist", function (storage) {
-      if (storage.blacklist) {
-        console.log(storage.blacklist);
-        alert(storage.blacklist.join("\n"));
-      } else {
-        alert("Blacklist is empty");
-      }
-    });
-  });
-
-  showCategories.addEventListener("click", function () {
-    chrome.storage.sync.get("categories", function (storage) {
-      if (storage.categories) {
-        console.log(storage.categories);
-        alert(JSON.stringify(storage.categories, null, 2));
-      } else {
-        alert("categories is empty");
-      }
-    });
-  });
-
-  const infoIcon = document.getElementById("infoIcon");
-  const infoText = document.getElementById("infoText");
+  const infoIconFilter = document.getElementById("infoIcon");
+  const infoTextFilter = document.getElementById("infoText");
   const infoIconCat = document.getElementById("infoIconCat");
   const infoTextCat = document.getElementById("infoTextCat");
   const infoIconRename = document.getElementById("infoIconRename");
   const infoTextRename = document.getElementById("infoTextRename");
 
-  infoIcon.addEventListener("click", () => {
-    alert(infoText.textContent);
+  infoIconFilter.addEventListener("click", () => {
+    alert(infoTextFilter.textContent);
   });
   infoIconCat.addEventListener("click", () => {
     alert(infoTextCat.textContent);
@@ -163,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const jsonData = JSON.parse(e.target.result);
+          const jsonData = JSON.parse(e.target.storage);
           const fileName = file.name;
           const timestamp = new Date().toLocaleString();
 
@@ -189,7 +137,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function submitBlacklist() {
     blacklistInput.style.height = "auto";
-    blacklistInput.style.height = blacklistInput.scrollHeight + "px";
+    blacklistInput.style.height = blacklistInput.scrollHeight + 5 + "px";
 
     if (blacklistInput.value === "") {
       return;
@@ -205,7 +153,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function submitCategories() {
     categoriesInput.style.height = "auto";
-    categoriesInput.style.height = categoriesInput.scrollHeight + "px";
+    categoriesInput.style.height = categoriesInput.scrollHeight + 5 + "px";
     let value = categoriesInput.value;
 
     if (value === "") {
@@ -237,5 +185,41 @@ document.addEventListener("DOMContentLoaded", function () {
     } else return;
 
     chrome.storage.sync.set({ rename: newRename }, function () {});
+  }
+
+  function initializeCheckboxes() {
+    chrome.storage.sync.get(
+      ["removeNotifs", "filterToggle", "categoriesToggle", "sideAgnostic"],
+      function (options) {
+        checkboxes.forEach(function (checkbox) {
+          checkbox.checked = options[checkbox.id];
+        });
+      }
+    );
+  }
+
+  function addCheckboxListeners() {
+    checkboxes.forEach((checkbox) => {
+      checkbox.addEventListener("change", function (event) {
+        let obj = {};
+        obj[event.target.id] = event.target.checked;
+        chrome.storage.sync.set(obj, function () {
+          console.log(
+            `Option ${event.target.id} set to ${event.target.checked} and saved to chrome storage`
+          );
+        });
+      });
+    });
+  }
+
+  function resizeInput(input, obj, stringify = true) {
+    if (stringify) {
+      input.value = JSON.stringify(obj, null, 2);
+    }
+    input.style.whiteSpace = "pre";
+    input.style.width = "auto";
+    input.style.height = "auto";
+    input.style.width = input.scrollWidth + 25 + "px";
+    input.style.height = input.scrollHeight + 5 + "px";
   }
 });
