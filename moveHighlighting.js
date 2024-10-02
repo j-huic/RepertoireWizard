@@ -1,7 +1,23 @@
 var oldFen = "";
 var allcourses = {};
 var options = {};
-initializeData();
+
+chrome.runtime.sendMessage({ method: "getOptions" }, function (response) {
+  options = response;
+
+  if (options.removeWiki) {
+    observerStatic.observe(document, { childList: true, subtree: true });
+  }
+
+  if (options.highlightMoves) {
+    chrome.storage.local.get("courseData", function (result) {
+      allcourses = result.courseData;
+      if (allcourses) {
+        mainObserver.observe(document, { childList: true, subtree: true });
+      }
+    });
+  }
+});
 
 // top level observer which triggers the inner observer when the explorer tab is open
 let mainObserver = new MutationObserver(() => {
@@ -38,9 +54,6 @@ let observerStatic = new MutationObserver(function (mutations) {
     observerStatic.disconnect();
   }
 });
-
-mainObserver.observe(document, { childList: true, subtree: true });
-observerStatic.observe(document, { childList: true, subtree: true });
 
 // functions
 // top level function which checks and highlights explorer moves against course data for current position
@@ -211,42 +224,6 @@ function getSide() {
     "cg-wrap cgv1 manipulable orientation-black"
   );
   return black.length === 1 ? "black" : "white";
-}
-
-async function initializeData() {
-  // allcourses = await loadJSON("coursefiles/allcourses_pure.json");
-  allcourses = await loadJSONfromLocal();
-  options = await loadOptions();
-}
-
-async function loadJSON(path) {
-  const response = await fetch(chrome.runtime.getURL(path));
-  const json = await response.json();
-  return json;
-}
-
-async function loadJSONfromLocal() {
-  return new Promise((resolve, reject) => {
-    chrome.storage.local.get("courseData", function (result) {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve(result.courseData);
-      }
-    });
-  });
-}
-
-function loadOptions() {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage({ method: "getOptions" }, function (response) {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve(response);
-      }
-    });
-  });
 }
 
 function getMoveCardHTML(move) {

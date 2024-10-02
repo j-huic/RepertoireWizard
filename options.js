@@ -189,7 +189,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function initializeCheckboxes() {
     chrome.storage.sync.get(
-      ["removeNotifs", "filterToggle", "categoriesToggle", "sideAgnostic"],
+      [
+        "removeNotifs",
+        "filterToggle",
+        "categoriesToggle",
+        "sideAgnostic",
+        "highlightMoves",
+        "removeWiki",
+      ],
       function (options) {
         checkboxes.forEach(function (checkbox) {
           checkbox.checked = options[checkbox.id];
