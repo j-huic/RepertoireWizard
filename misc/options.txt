@@ -15,11 +15,7 @@ ORGANIZE:
   "WHITE": [
     "d4",
     "catalan",
-    "neo",
-    "thing",
-    "one",
-    "two",
-    "three"
+    "neo"
   ]
 }
 
