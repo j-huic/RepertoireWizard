@@ -1,0 +1,16 @@
+node_modules/
+build/
+templates/
+misc/
+externalassets/
+test/
+coursefiles/
+options2.js
+fetch.js
+package.json
+package-lock.json
+scrape.js
+*.DS_Store
+*.zip
+*.sh
+.*
