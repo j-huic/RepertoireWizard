@@ -49,7 +49,7 @@ if [ $? -eq 0 ]; then
     
     # List the contents of the zip file
     echo "Contents of the zip file:"
-    unzip -l "$OUTPUT_FILE" | awk 'NR > 3 {print $4}' | head -n -2
+    unzip -l "$OUTPUT_FILE" | awk 'NR > 3 {print $4}' | sed '$d' | sed '$d'
 else
     echo "An error occurred while zipping the extension."
     exit 1
