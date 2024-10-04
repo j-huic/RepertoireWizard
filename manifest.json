@@ -29,22 +29,16 @@
     },
     {
       "matches": ["https://www.chessable.com/explore/*"],
-      "js": ["filter.js"]
+      "js": ["dropdownFilter.js"]
     },
     {
       "matches": ["https://www.chessable.com/analysis/*"],
-      "js": ["analysisScript.js"],
+      "js": ["analysisReroute.js"],
       "run_at": "document_start"
     },
     {
       "matches": ["https://lichess.org/*"],
       "js": ["moveHighlighting.js"]
-    }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": ["popup.js", "coursefiles/*"],
-      "matches": ["<all_urls>"]
     }
   ]
 }
