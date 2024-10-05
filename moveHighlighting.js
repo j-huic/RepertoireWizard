@@ -14,6 +14,11 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (response) {
       allcourses = result.courseData;
       if (allcourses) {
         mainObserver.observe(document, { childList: true, subtree: true });
+        if (document.readyState === "complete") {
+          setTimeout(() => {
+            highlightExplorerMoves();
+          }, 100);
+        }
       }
     });
   }
@@ -61,18 +66,19 @@ function highlightExplorerMoves() {
   fen = getFen();
   let tbody = document.getElementsByTagName("tbody")[0];
   let uniqueCourseMoves = new Set(moveRecommendationsFromFen(fen));
-
-  for (let move of tbody.children) {
-    let moveText = move.getElementsByTagName("td")[0].textContent;
-    if (uniqueCourseMoves.has(moveText)) {
-      move.getElementsByTagName("td")[0].style.color = "red";
-      uniqueCourseMoves.delete(moveText);
+  if (tbody) {
+    for (let move of tbody.children) {
+      let moveText = move.getElementsByTagName("td")[0].textContent;
+      if (uniqueCourseMoves.has(moveText)) {
+        move.getElementsByTagName("td")[0].style.color = "red";
+        uniqueCourseMoves.delete(moveText);
+      }
     }
-  }
-  if (uniqueCourseMoves.size > 0) {
-    for (let move of uniqueCourseMoves) {
-      moveCard = createMoveCard(move, fen);
-      tbody.appendChild(moveCard);
+    if (uniqueCourseMoves.size > 0) {
+      for (let move of uniqueCourseMoves) {
+        moveCard = createMoveCard(move, fen);
+        tbody.appendChild(moveCard);
+      }
     }
   }
 }
@@ -120,12 +126,27 @@ function moveRecommendationsFromFen(fen) {
   return uniqueCourseMoves;
 }
 
+function courseOptionsBreakdown() {
+  let courseOptions = options.courseDataInfo;
+  let white = [];
+  let black = [];
+
+  for (let key in courseOptions) {
+    if (!key.includes("Include") && courseOptions[key + "Include"]) {
+      if (courseOptions[key]) {
+        black.push(key);
+      } else {
+        white.push(key);
+      }
+    }
+  }
+
+  return { white, black };
+}
+
 // takes a FEN and returns the course data
 function displayMoves(fen, sideAgnostic = false) {
-  let courseColors = {
-    white: ["d4", "catalan"],
-    black: ["nimzo", "kid", "sicilian"],
-  };
+  let courseColors = courseOptionsBreakdown();
 
   let side = getSide();
   let courses = sideAgnostic
@@ -196,7 +217,11 @@ function hasFenChanged() {
 // gets the FEN from the tbody if it exists, otherwise from the input box (latter is slower)
 function getFen() {
   tbody = document.querySelector("tbody");
-  if (tbody) {
+  if (
+    tbody &&
+    tbody.attributes["data-fen"] &&
+    tbody.attributes["data-fen"].value
+  ) {
     return tbody.attributes["data-fen"].value;
   }
 
@@ -214,9 +239,13 @@ function getFen() {
 
 // cuts off the part of FEN which hurts transposition recognition
 function getPureFen(fen) {
-  let split = fen.split(" ");
-  let newFen = split.slice(0, split.length - 2).join(" ");
-  return newFen;
+  try {
+    let split = fen.split(" ");
+    let newFen = split.slice(0, split.length - 2).join(" ");
+    return newFen;
+  } catch {
+    return;
+  }
 }
 
 function getSide() {
