@@ -38,6 +38,7 @@ function handleGetOptions(sendResponse) {
     "sideAgnostic",
     "highlightMoves",
     "removeWiki",
+    "courseDataInfo",
   ];
   chrome.storage.sync.get(options, function (items) {
     sendResponse(items);
@@ -71,13 +72,9 @@ function handleSaveVar(request) {
       typeof value === "object"
     ) {
       let newValue = mergeDicts(items[key], value);
-      chrome.storage.local.set({ [key]: newValue }, () => {
-        console.log("saved new value to storage");
-      });
+      chrome.storage.local.set({ [key]: newValue });
     } else {
-      chrome.storage.local.set({ [key]: value }, () => {
-        console.log("saved new value to storage");
-      });
+      chrome.storage.local.set({ [key]: value });
     }
   });
 }

@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
     ["courseData", "courseDataFilename", "courseDataTimestamp"],
     function (storage) {
       if (storage.courseData) {
-        displayCourseDataOptions(storage.courseData);
+        displayCourseDataOptions(Object.keys(storage.courseData));
         fileStatusMessage.textContent =
           "Course data file already exists: " +
           storage.courseDataFilename +
@@ -85,12 +85,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
   clearCategories.addEventListener("click", function () {
-    chrome.storage.sync.set({ categories: {} }, function () {
+    chrome.storage.sync.remove("categories", function () {
       categoriesInput.value = "";
     });
   });
   clearRename.addEventListener("click", function () {
-    chrome.storage.sync.set({ rename: {} }, function () {
+    chrome.storage.sync.remove("rename", function () {
       renameInput.value = "";
     });
   });
@@ -130,6 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
       reader.onload = (e) => {
         try {
           const jsonData = JSON.parse(e.target.result);
+          const keys = Object.keys(jsonData);
           const fileName = file.name;
           const timestamp = new Date().toLocaleString();
 
@@ -141,7 +142,14 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             () => {
               alert("File uploaded successfully");
-              displayCourseDataOptions(jsonData);
+              chrome.storage.sync.set(
+                {
+                  courseDataInfo: initializeInfoFromCourseData(keys),
+                },
+                () => {
+                  displayCourseDataOptions(keys.sort());
+                }
+              );
             }
           );
         } catch (error) {
@@ -154,6 +162,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  function initializeInfoFromCourseData(courseDataKeys) {
+    let courseDataInfo = {};
+    for (let key of courseDataKeys) {
+      courseDataInfo[key] = false;
+      courseDataInfo[key + "Include"] = true;
+    }
+
+    return courseDataInfo;
+  }
+
   function styleCheckbox(input) {
     input.style.backgroundColor = input.checked ? "black" : "white";
     input.style.borderColor = input.checked ? "black" : "white";
@@ -163,13 +181,13 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   }
 
-  function createCourseDataOptionsRow(key, container, storedData) {
+  function createCourseDataOptionsRow(key, container, courseDataInfo) {
     let row = document.createElement("div");
     row.className = "row align-items-center mb-2";
 
     // label column
     let labelCol = document.createElement("div");
-    labelCol.className = "col-4 text-start";
+    labelCol.className = "col-6 text-start";
     let label = document.createElement("label");
     label.textContent = key;
     label.className = "form-check-label me-2";
@@ -206,21 +224,27 @@ document.addEventListener("DOMContentLoaded", function () {
     checkbox.id = key + "Include";
     checkboxDiv.appendChild(checkbox);
 
-    if (storedData[key] !== undefined) {
-      input.checked = storedData[key];
-      checkbox.checked = storedData[key + "Include"];
-    } else {
-      checkbox.checked = true;
+    if (courseDataInfo !== undefined) {
+      input.checked = courseDataInfo[key];
+      checkbox.checked = courseDataInfo[key + "Include"];
     }
-
     styleCheckbox(input);
 
-    input.addEventListener("change", function () {
-      chrome.storage.sync.set({ [key]: input.checked });
+    input.addEventListener("change", () => {
       styleCheckbox(input);
+      chrome.storage.sync.get(["courseDataInfo"], (storage) => {
+        let courseDataInfo = storage.courseDataInfo || {};
+        courseDataInfo[key] = input.checked;
+        chrome.storage.sync.set({ courseDataInfo: courseDataInfo });
+      });
     });
-    checkbox.addEventListener("change", function () {
-      chrome.storage.sync.set({ [key + "Include"]: checkbox.checked });
+
+    checkbox.addEventListener("change", () => {
+      chrome.storage.sync.get(["courseDataInfo"], (storage) => {
+        let courseDataInfo = storage.courseDataInfo || {};
+        courseDataInfo[key + "Include"] = checkbox.checked;
+        chrome.storage.sync.set({ courseDataInfo: courseDataInfo });
+      });
     });
 
     row.appendChild(labelCol);
@@ -229,8 +253,8 @@ document.addEventListener("DOMContentLoaded", function () {
     container.appendChild(row);
   }
 
-  function displayCourseDataOptions(courseData) {
-    if (Object.keys(courseData).length > 30) {
+  function displayCourseDataOptions(courseDataKeys) {
+    if (courseDataKeys.length > 30) {
       alert(
         "Course data has more than 30 keys where there should be courses. Likely incorrect format."
       );
@@ -238,47 +262,71 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     let optionsContainer = document.getElementById("courseOptionsContainer");
-    optionsContainer.innerHTML = "";
+    titleText =
+      "Identify which side each course is meant for and set whether to enable it for move highlighting:";
+    switchLabelText = "Color";
+    checkboxLabelText = "Include";
+    createOptionsTitleRow(
+      optionsContainer,
+      titleText,
+      switchLabelText,
+      checkboxLabelText
+    );
 
-    let titleRow = document.createElement("div");
+    chrome.storage.sync.get(["courseDataInfo"], (storage) => {
+      for (let key of courseDataKeys) {
+        createCourseDataOptionsRow(
+          key,
+          optionsContainer,
+          storage.courseDataInfo
+        );
+      }
+    });
+  }
+
+  function createOptionsTitleRow(
+    container,
+    titleText,
+    switchLabelText,
+    checkboxLabelText
+  ) {
+    container.innerHTML = "";
+
+    const titleRow = document.createElement("div");
     titleRow.className = "row align-items-center mb-3";
 
-    let titleCol = document.createElement("div");
-    titleCol.className = "col-4 text-start";
-
-    let titleLabel = document.createElement("label");
-    titleLabel.textContent =
-      "Identify which side each course is meant for and set whether to enable it for move highlighting:";
+    // title column
+    const titleCol = document.createElement("div");
+    titleCol.className = "col-6 text-start";
+    titleCol.id = "titleCol";
+    const titleLabel = document.createElement("span");
+    titleLabel.textContent = titleText;
     titleCol.appendChild(titleLabel);
 
-    let switchCol = document.createElement("div");
+    // switch column
+    const switchCol = document.createElement("div");
     switchCol.className = "col-1";
+    switchCol.id = "switchCol";
     switchCol.style.display = "flex";
     switchCol.style.justifyContent = "center";
-    let switchLabel = document.createElement("label");
-    switchLabel.textContent = "Color";
+    const switchLabel = document.createElement("span");
+    switchLabel.textContent = switchLabelText;
     switchCol.appendChild(switchLabel);
 
-    let checkboxCol = document.createElement("div");
+    // checkbox column
+    const checkboxCol = document.createElement("div");
     checkboxCol.className = "col-1";
+    checkboxCol.id = "checkboxCol";
     checkboxCol.style.display = "flex";
     checkboxCol.style.justifyContent = "center";
-    let checkboxLabel = document.createElement("label");
-    checkboxLabel.textContent = "Include";
+    const checkboxLabel = document.createElement("span");
+    checkboxLabel.textContent = checkboxLabelText;
     checkboxCol.appendChild(checkboxLabel);
 
     titleRow.appendChild(titleCol);
     titleRow.appendChild(switchCol);
     titleRow.appendChild(checkboxCol);
-    optionsContainer.appendChild(titleRow);
-
-    chrome.storage.sync.get(null, (storedData) => {
-      for (let key in courseData) {
-        if (courseData.hasOwnProperty(key)) {
-          createCourseDataOptionsRow(key, optionsContainer, storedData);
-        }
-      }
-    });
+    container.appendChild(titleRow);
   }
 
   function submitBlacklist() {
@@ -304,7 +352,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (value === "") {
       input = {};
     } else {
-      input = JSON.parse(value);
+      try {
+        input = JSON.parse(value);
+      } catch (error) {
+        alert("Error parsing JSON: " + error);
+        return;
+      }
     }
 
     if (typeof input === "object" && Object.keys(input).length > 0) {
@@ -322,7 +375,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (value === "") {
       input = {};
     } else {
-      input = JSON.parse(value);
+      try {
+        input = JSON.parse(value);
+      } catch (error) {
+        alert("Error parsing JSON: " + error);
+        return;
+      }
     }
 
     if (typeof input === "object") {
@@ -353,16 +411,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function addCheckboxListeners() {
     checkboxes.forEach((checkbox) => {
       checkbox.addEventListener("change", function (event) {
-        // let obj = {};
-        // obj[event.target.id] = event.target.checked;
-        chrome.storage.sync.set(
-          { [event.target.id]: event.target.checked },
-          function () {
-            console.log(
-              `Option ${event.target.id} set to ${event.target.checked} and saved to chrome storage`
-            );
-          }
-        );
+        chrome.storage.sync.set({ [event.target.id]: event.target.checked });
       });
     });
   }
