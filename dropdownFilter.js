@@ -22,7 +22,6 @@ var callback = function (mutationsList, observer) {
                         .toLowerCase()
                         .includes(response.blacklist[j].toLowerCase())
                     ) {
-                      // console.log("removing " + items[i].innerText);
                       dropdown.remove(i);
                       break;
                     }
@@ -62,15 +61,13 @@ var callback = function (mutationsList, observer) {
                 }
               }
 
-              console.log("renaming called 1");
               rename();
-              console.log("renaming called 2");
             }
           );
 
           observer.disconnect();
         }
-      } else console.log("Button div not found");
+      }
     }
   }
 };
@@ -80,19 +77,14 @@ observer.observe(document, { childList: true, subtree: true });
 
 rename = function () {
   chrome.runtime.sendMessage({ method: "getOptions" }, function (response) {
-    console.log("rename thing entered");
-    console.log(response.rename);
-
     let rename = response.rename;
     let renameKeys = Object.keys(rename);
-    console.log(renameKeys);
 
     var iframe = document.querySelector("iframe");
     let dropdown2 = iframe.contentDocument.getElementById("repertoireSelector");
     let items = dropdown2.querySelectorAll("option");
 
     for (let i = 0; i < items.length; i++) {
-      console.log(items[i].innerText);
       for (let j = 0; j < renameKeys.length; j++) {
         if (
           items[i].innerText.toLowerCase().includes(renameKeys[j].toLowerCase())
