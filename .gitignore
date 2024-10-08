@@ -6,3 +6,6 @@ templates
 build/
 test/
 externalassets/
+package-lock.json
+package.json
+build_ff/

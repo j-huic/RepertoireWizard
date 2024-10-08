@@ -1,0 +1,7 @@
+build/
+node_modules/
+coursefiles/
+externalassets/
+templates/
+test/
+*.sh
