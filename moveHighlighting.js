@@ -95,7 +95,7 @@ function addMoveToEmpty() {
     var movesDiv = document.createElement("table");
     let newHeader = document.createElement("thead");
     movesDiv.className = "moves";
-    newHeader.innerHTML = getHeaderHTML();
+    newHeader.appendChild(createHeaderElement());
     movesDiv.appendChild(newHeader);
     empty.appendChild(movesDiv);
   }
@@ -123,6 +123,7 @@ function moveRecommendationsFromFen(fen) {
   let courseMoves = displayMoves(getPureFen(fen), options.sideAgnostic);
   let allCourseMoves = Object.values(courseMoves).flat();
   let uniqueCourseMoves = Array.from(new Set(allCourseMoves));
+
   return uniqueCourseMoves;
 }
 
@@ -165,6 +166,8 @@ function displayMoves(fen, sideAgnostic = false) {
 
 function createMoveCard(move, fen) {
   let tr = document.createElement("tr");
+  tr.setAttribute("origin", "manufactured");
+
   chrome.runtime.sendMessage(
     { method: "getUCI", fen: fen, move: move },
     (response) => {
@@ -173,8 +176,41 @@ function createMoveCard(move, fen) {
       }
     }
   );
-  tr.setAttribute("origin", "manufactured");
-  tr.innerHTML = getMoveCardHTML(move);
+
+  const tdMove = document.createElement("td");
+  tdMove.textContent = move;
+  tdMove.style.color = "red";
+
+  const tdGames = document.createElement("td");
+  tdGames.textContent = "N/A";
+
+  const tdGamesCount = document.createElement("td");
+  tdGamesCount.textContent = "0";
+
+  const tdTitle = document.createElement("td");
+  const div = document.createElement("div");
+  div.className = "bar";
+
+  const spanWhite = document.createElement("span");
+  const spanDraws = document.createElement("span");
+  const spanBlack = document.createElement("span");
+  spanWhite.className = "white";
+  spanDraws.className = "draws";
+  spanBlack.className = "black";
+  for (let span of [spanWhite, spanDraws, spanBlack]) {
+    span.style.width = "33.3%";
+    span.textContent = "0%";
+  }
+
+  div.appendChild(spanWhite);
+  div.appendChild(spanDraws);
+  div.appendChild(spanBlack);
+  tdTitle.appendChild(div);
+  tr.appendChild(tdMove);
+  tr.appendChild(tdGames);
+  tr.appendChild(tdGamesCount);
+  tr.appendChild(tdTitle);
+
   return tr;
 }
 
@@ -255,27 +291,21 @@ function getSide() {
   return black.length === 1 ? "black" : "white";
 }
 
-function getMoveCardHTML(move) {
-  return `
-    <td style="color: red;">${move}</td>
-    <td>N/A</td>
-    <td>0</td>
-    <td title="">
-      <div class="bar">
-        <span class="white" style="width: 33.3%">0%</span
-        ><span class="draws" style="width: 33.3%">0%</span
-        ><span class="black" style="width: 33.3%">0%</span>
-      </div>
-    </td>
-  `;
-}
+function createHeaderElement() {
+  const tr = document.createElement("tr");
+  const thMove = document.createElement("th");
+  thMove.textContent = "Move";
 
-function getHeaderHTML() {
-  return `
-      <tr>
-        <th>Move</th>
-        <th colspan="2">Games</th>
-        <th>White / Draw / Black</th>
-      </tr>
-  `;
+  const thGames = document.createElement("th");
+  thGames.textContent = "Games";
+  thGames.colSpan = 2;
+
+  const thResults = document.createElement("th");
+  thResults.textContent = "White / Draw / Black";
+
+  tr.appendChild(thMove);
+  tr.appendChild(thGames);
+  tr.appendChild(thResults);
+
+  return tr;
 }

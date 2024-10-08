@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "Repertoire Helper",
+  "version": "1.0",
+  "description": "Brings together the best of Chessable and Lichess",
+  "icons": {
+    "128": "assets/icon128.png",
+    "48": "assets/icon48.png",
+    "16": "assets/icon16.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "assets/icon16.png",
+      "48": "assets/icon48.png",
+      "128": "assets/icon128.png"
+    },
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.chessable.com/*"],
+      "js": ["global.js"]
+    },
+    {
+      "matches": ["https://www.chessable.com/explore/*"],
+      "js": ["dropdownFilter.js"]
+    },
+    {
+      "matches": ["https://www.chessable.com/analysis/*"],
+      "js": ["analysisReroute.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://lichess.org/*"],
+      "js": ["moveHighlighting.js"]
+    }
+  ]
+}
