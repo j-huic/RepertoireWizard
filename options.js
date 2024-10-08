@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
     ["courseData", "courseDataFilename", "courseDataTimestamp"],
     function (storage) {
       if (storage.courseData) {
-        displayCourseDataOptions(Object.keys(storage.courseData));
+        displayCourseDataOptions(Object.keys(storage.courseData).sort());
         fileStatusMessage.textContent =
           "Course data file already exists: " +
           storage.courseDataFilename +

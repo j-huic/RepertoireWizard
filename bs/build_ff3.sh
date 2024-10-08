@@ -2,7 +2,7 @@
 
 set -e  # Exit immediately if a command exits with a non-zero status
 
-BUILD_DIR="build_ff"
+BUILD_DIR="build"
 BASE_NAME="RepertoireHelper"
 IGNORE_FILE=".buildignore"
 
@@ -26,41 +26,50 @@ process_ignore_patterns() {
             echo -n " -x \"$line\""
         fi
     done < "$IGNORE_FILE"
-    # Add manifest.json to ignore patterns
-    echo -n " -x \"manifest.json\""
 }
 
 IGNORE_PATTERNS=$(process_ignore_patterns)
 
-# Find an available filename
-COUNTER=1
-OUTPUT_FILE="$BUILD_DIR/${BASE_NAME}.zip"
-while [ -f "$OUTPUT_FILE" ]; do
-    OUTPUT_FILE="$BUILD_DIR/${BASE_NAME}_$COUNTER.zip"
-    ((COUNTER++))
-done
+create_zip() {
+    local output_file="$1"
+    local zip_command="zip -r \"$output_file\" . $IGNORE_PATTERNS"
+    echo "Executing: $zip_command"
+    eval $zip_command
 
-# Temporarily replace the original manifest.json with manifest_firefox.json
-cp manifest_firefox.json manifest.json
+    if [ $? -eq 0 ]; then
+        echo "Extension zipped successfully into $output_file"
+        echo "File size: $(du -h "$output_file" | cut -f1)"
+        
+        # List the contents of the zip file
+        echo "Contents of the zip file:"
+        unzip -l "$output_file" | awk 'NR > 3 {print $4}' | sed '$d' | sed '$d'
+    else
+        echo "An error occurred while zipping the extension."
+        exit 1
+    fi
+}
 
-# Construct and execute the zip command
-ZIP_COMMAND="zip -r \"$OUTPUT_FILE\" . $IGNORE_PATTERNS"
-echo "Executing: $ZIP_COMMAND"
-eval $ZIP_COMMAND
+# Create Chrome version
+CHROME_OUTPUT="$BUILD_DIR/${BASE_NAME}_chrome.zip"
+create_zip "$CHROME_OUTPUT"
 
-if [ $? -eq 0 ]; then
-    echo "Firefox extension zipped successfully into $OUTPUT_FILE"
-    echo "File size: $(du -h "$OUTPUT_FILE" | cut -f1)"
-    
-    # List the contents of the zip file
-    echo "Contents of the zip file:"
-    unzip -l "$OUTPUT_FILE" | awk 'NR > 3 {print $4}' | sed '$d' | sed '$d'
-else
-    echo "An error occurred while zipping the extension."
-    # Restore original manifest.json in case of error
-    cp manifest_chrome.json manifest.json
-    exit 1
-fi 
+# Create temporary directory for Firefox version
+FIREFOX_TEMP_DIR=$(mktemp -d)
+cp -R . "$FIREFOX_TEMP_DIR"
 
-# Restore the original manifest.json for Chrome
-cp manifest_chrome.json manifest.json
+# Replace "chrome" with "browser" in all .js files
+find "$FIREFOX_TEMP_DIR" -type f -name "*.js" -exec sed -i 's/chrome\./browser./g' {} +
+
+# Copy Firefox-specific manifest if it exists
+if [ -f "manifest_firefox.json" ]; then
+    cp "manifest_firefox.json" "$FIREFOX_TEMP_DIR/manifest.json"
+fi
+
+# Create Firefox version
+FIREFOX_OUTPUT="$BUILD_DIR/${BASE_NAME}_firefox.zip"
+(cd "$FIREFOX_TEMP_DIR" && create_zip "$FIREFOX_OUTPUT")
+
+# Clean up temporary directory
+rm -rf "$FIREFOX_TEMP_DIR"
+
+echo "Build process completed. Chrome version: $CHROME_OUTPUT, Firefox version: $FIREFOX_OUTPUT"
