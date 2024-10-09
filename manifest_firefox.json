@@ -27,7 +27,7 @@
     "open_in_tab": true
   },
   "background": {
-    "scripts": ["background.js"],
+    "scripts": ["libs/browser-polyfill.js", "background.js"],
     "type": "module"
   },
   "permissions": ["storage"],
@@ -38,7 +38,7 @@
     },
     {
       "matches": ["*://www.chessable.com/explore/*"],
-      "js": ["dropdownFilter.js"]
+      "js": ["libs/browser-polyfill.js", "dropdownFilter.js"]
     },
     {
       "matches": ["*://www.chessable.com/analysis/*"],

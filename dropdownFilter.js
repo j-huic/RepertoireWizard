@@ -9,9 +9,10 @@ var callback = function (mutationsList, observer) {
           var items = dropdown.children;
           var itemslength = items.length;
 
-          chrome.runtime.sendMessage(
-            { method: "getBlacklist" },
-            function (response) {
+          browser.runtime
+            .sendMessage({ method: "getBlacklist" })
+            .then((response) => {
+              console.log("blacklist", response);
               if (response.blacklist) {
                 var blacklistlength = response.blacklist.length;
 
@@ -28,12 +29,12 @@ var callback = function (mutationsList, observer) {
                   }
                 }
               }
-            }
-          );
+            });
 
-          chrome.runtime.sendMessage(
-            { method: "getCategories" },
-            function (response) {
+          browser.runtime
+            .sendMessage({ method: "getCategories" })
+            .then((response) => {
+              console.log("categories", response);
               var categories = Object.keys(response.categories);
 
               for (var k = 0; k < categories.length; k++) {
@@ -62,8 +63,7 @@ var callback = function (mutationsList, observer) {
               }
 
               rename();
-            }
-          );
+            });
 
           observer.disconnect();
         }
@@ -75,8 +75,8 @@ var callback = function (mutationsList, observer) {
 var observer = new MutationObserver(callback);
 observer.observe(document, { childList: true, subtree: true });
 
-rename = function () {
-  chrome.runtime.sendMessage({ method: "getOptions" }, function (response) {
+function rename() {
+  browser.runtime.sendMessage({ method: "getOptions" }).then((response) => {
     let rename = response.rename;
     let renameKeys = Object.keys(rename);
 
@@ -95,4 +95,4 @@ rename = function () {
       }
     }
   });
-};
+}

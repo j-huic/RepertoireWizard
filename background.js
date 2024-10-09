@@ -1,34 +1,35 @@
-import { Chess } from "https://cdn.skypack.dev/chess.js";
+import { Chess } from "./libs/chess.js";
+import "./libs/browser-polyfill.js";
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+browser.runtime.onMessage.addListener((request, sender) => {
   if (request.method === "getOptions") {
-    handleGetOptions(sendResponse);
+    return handleGetOptions();
   } else if (request.method === "getBlacklist") {
-    handleGetBlacklist(sendResponse);
+    console.log("getBlacklist");
+    return handleGetBlacklist();
   } else if (request.method === "getCategories") {
-    handleGetCategories(sendResponse);
+    return handleGetCategories();
   } else if (request.method === "saveVar") {
-    handleSaveVar(request);
+    return handleSaveVar(request);
   } else if (request.method === "getData") {
-    handleGetData(request, sendResponse);
-    return true;
+    return handleGetData(request);
   } else if (request.method === "getUCI") {
-    handleGetUCI(request.fen, request.move, sendResponse);
+    return handleGetUCI(request.fen, request.move);
   }
-  return true;
+  return Promise.resolve();
 });
 
-function handleGetUCI(fen, algMove, sendResponse) {
+function handleGetUCI(fen, algMove) {
   let chess = new Chess(fen);
   let move = chess.move(algMove);
   if (move) {
-    sendResponse(move.from + move.to);
+    return Promise.resolve(move.from + move.to);
   } else {
-    sendResponse(null);
+    return Promise.resolve(null);
   }
 }
 
-function handleGetOptions(sendResponse) {
+function handleGetOptions() {
   let options = [
     "removeNotifs",
     "extraDropdown",
@@ -40,48 +41,48 @@ function handleGetOptions(sendResponse) {
     "removeWiki",
     "courseDataInfo",
   ];
-  chrome.storage.sync.get(options, function (items) {
-    sendResponse(items);
-  });
+  return browser.storage.sync.get(options);
 }
 
-function handleGetBlacklist(sendResponse) {
-  chrome.storage.sync.get(["blacklist", "filterToggle"], function (item) {
-    if (item.filterToggle) sendResponse(item);
-    else sendResponse(false);
-  });
+function handleGetBlacklist() {
+  return browser.storage.sync
+    .get(["blacklist", "filterToggle"])
+    .then((item) => {
+      console.log(item);
+      if (item.filterToggle) return item;
+      else return false;
+    });
 }
 
-function handleGetCategories(sendResponse) {
-  chrome.storage.sync.get(
-    ["categories", "categoriesToggle", "rename"],
-    function (item) {
-      if (item.categoriesToggle) sendResponse(item);
-      else sendResponse(false);
-    }
-  );
+function handleGetCategories() {
+  return browser.storage.sync
+    .get(["categories", "categoriesToggle", "rename"])
+    .then((item) => {
+      if (item.categoriesToggle) return item;
+      else return false;
+    });
 }
 
 function handleSaveVar(request) {
   let key = request.key;
   let value = request.value;
-  chrome.storage.local.get([key], (items) => {
+  return browser.storage.local.get([key]).then((items) => {
     if (
       items[key] &&
       typeof items[key] === "object" &&
       typeof value === "object"
     ) {
       let newValue = mergeDicts(items[key], value);
-      chrome.storage.local.set({ [key]: newValue });
+      return browser.storage.local.set({ [key]: newValue });
     } else {
-      chrome.storage.local.set({ [key]: value });
+      return browser.storage.local.set({ [key]: value });
     }
   });
 }
 
-function handleGetData(request, sendResponse) {
-  chrome.storage.local.get([request.key], (items) => {
-    sendResponse(items[request.key]);
+function handleGetData(request) {
+  return browser.storage.local.get([request.key]).then((items) => {
+    return items[request.key];
   });
 }
 
