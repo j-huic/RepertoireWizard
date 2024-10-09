@@ -42,22 +42,17 @@ done
 cp manifest_firefox.json manifest.json
 
 # Construct and execute the zip command
-ZIP_COMMAND="zip -r \"$OUTPUT_FILE\" . $IGNORE_PATTERNS"
+ZIP_COMMAND="zip -1 -r \"$OUTPUT_FILE\" . $IGNORE_PATTERNS"
 echo "Executing: $ZIP_COMMAND"
 eval $ZIP_COMMAND
 
 if [ $? -eq 0 ]; then
     echo "Firefox extension zipped successfully into $OUTPUT_FILE"
     echo "File size: $(du -h "$OUTPUT_FILE" | cut -f1)"
-    
-    # List the contents of the zip file
-    # echo "Contents of the zip file:"
-    # unzip -l "$OUTPUT_FILE" | awk 'NR > 3 {print $4}' | sed '$d' | sed '$d'
 else
     echo "An error occurred while zipping the extension."
     cp manifest_chrome.json manifest.json
     exit 1
 fi 
 
-# Restore the original manifest.json for Chrome
 cp manifest_chrome.json manifest.json
