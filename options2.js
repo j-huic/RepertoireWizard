@@ -14,112 +14,111 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const renameInput = document.getElementById("renameInput");
   const renameSubmit = document.getElementById("renameSubmit");
+  const clearRename = document.getElementById("clearRename");
 
   const fileInput = document.getElementById("fileInput");
   const uploadButton = document.getElementById("uploadFileButton");
   const fileStatusMessage = document.getElementById("fileStatusMessage");
+  const clearData = document.getElementById("clearData");
 
-  chrome.storage.sync.get(
-    ["blacklist", "categories", "rename"],
-    function (storage) {
-      blacklistInput.value = storage.blacklist.join(", ");
-      categoriesInput.value = JSON.stringify(storage.categories, null, 2);
-      renameInput.value = JSON.stringify(storage.rename, null, 2);
+  browser.storage.sync
+    .get(["blacklist", "categories", "rename"])
+    .then(function (storage) {
+      if (storage.blacklist) {
+        blacklistInput.value = storage.blacklist.join(", ");
+        blacklistInput.style.height = "auto";
+        blacklistInput.style.height = blacklistInput.scrollHeight + "px";
+      }
+      if (storage.categories) {
+        categoriesInput.value = JSON.stringify(storage.categories, null, 2);
+        resizeInput(categoriesInput, storage.categories);
+      }
+      if (storage.rename) {
+        renameInput.value = JSON.stringify(storage.rename, null, 2);
+        resizeInput(renameInput, storage.rename);
+      }
+    });
 
-      resizeInput(blacklistInput, storage.blacklist);
-      resizeInput(categoriesInput, storage.categories);
-      resizeInput(renameInput, storage.rename);
-    }
-  );
-
-  chrome.storage.local.get(
-    ["courseData", "courseDataFilename", "courseDataTimestamp"],
-    function (result) {
-      if (result) {
+  browser.storage.local
+    .get(["courseData", "courseDataFilename", "courseDataTimestamp"])
+    .then(function (storage) {
+      if (storage.courseData) {
+        displayCourseDataOptions(Object.keys(storage.courseData).sort());
         fileStatusMessage.textContent =
           "Course data file already exists: " +
-          result.courseDataFilename +
-          " (" +
-          result.courseDataTimestamp +
+          storage.courseDataFilename +
+          " (uploaded on   " +
+          storage.courseDataTimestamp +
           ")";
       }
-    }
-  );
+    });
 
   blacklistSubmit.addEventListener("click", submitBlacklist);
-  blacklistInput.addEventListener(
-    "keydown",
-    handleKeydown(blacklistInput, "blacklist")
-  );
-
   categoriesSubmit.addEventListener("click", submitCategories);
+  renameSubmit.addEventListener("click", submitRename);
+  uploadButton.addEventListener("click", uploadFile);
+
+  blacklistInput.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      submitBlacklist();
+    }
+  });
   categoriesInput.addEventListener("keydown", function (event) {
-    if (event.keyCode === 13) {
+    if (event.key === "Enter") {
       event.preventDefault();
       submitCategories();
     }
   });
-
-  renameSubmit.addEventListener("click", submitRename);
   renameInput.addEventListener("keydown", function (event) {
-    if (event.keyCode === 13) {
+    if (event.key === "Enter") {
       event.preventDefault();
       submitRename();
     }
   });
 
   clearBlacklist.addEventListener("click", function () {
-    chrome.storage.sync.set({ blacklist: [] }, function () {
+    browser.storage.sync.set({ blacklist: [] }).then(function () {
       blacklistInput.value = "";
-      console.log("Blacklist cleared");
     });
   });
-
   clearCategories.addEventListener("click", function () {
-    chrome.storage.sync.set({ categories: {} }, function () {
-      console.log("Categories cleared");
+    browser.storage.sync.remove("categories").then(function () {
+      categoriesInput.value = "";
+    });
+  });
+  clearRename.addEventListener("click", function () {
+    browser.storage.sync.remove("rename").then(function () {
+      renameInput.value = "";
+    });
+  });
+  clearData.addEventListener("click", function () {
+    browser.storage.local.remove("courseData").then(function () {
+      fileStatusMessage.textContent = "";
+      document.getElementById("courseOptionsContainer").innerHTML = "";
     });
   });
 
-  showBlacklist.addEventListener("click", function () {
-    chrome.storage.sync.get("blacklist", function (storage) {
-      if (storage.blacklist) {
-        console.log(storage.blacklist);
-        alert(storage.blacklist.join("\n"));
-      } else {
-        alert("Blacklist is empty");
-      }
-    });
-  });
-
-  showCategories.addEventListener("click", function () {
-    chrome.storage.sync.get("categories", function (storage) {
-      if (storage.categories) {
-        console.log(storage.categories);
-        alert(JSON.stringify(storage.categories, null, 2));
-      } else {
-        alert("categories is empty");
-      }
-    });
-  });
-
-  uploadButton.addEventListener("click", uploadFile);
-
-  const infoIconFilter = document.getElementById("infoIcon");
-  const infoTextFilter = document.getElementById("infoText");
-  const infoIconCat = document.getElementById("infoIconCat");
-  const infoTextCat = document.getElementById("infoTextCat");
+  const infoIconBlacklist = document.getElementById("infoIconBlacklist");
+  const infoTextBlacklist = document.getElementById("infoTextBlacklist");
   const infoIconRename = document.getElementById("infoIconRename");
   const infoTextRename = document.getElementById("infoTextRename");
+  const infoIconData = document.getElementById("infoIconData");
+  const infoTextData = document.getElementById("infoTextData");
+  const infoIconCat = document.getElementById("infoIconCat");
+  const infoTextCat = document.getElementById("infoTextCat");
 
-  infoIconFilter.addEventListener("click", () => {
-    alert(infoTextFilter.textContent);
+  infoIconBlacklist.addEventListener("click", () => {
+    alert(infoTextBlacklist.textContent);
   });
   infoIconCat.addEventListener("click", () => {
     alert(infoTextCat.textContent);
   });
   infoIconRename.addEventListener("click", () => {
     alert(infoTextRename.textContent);
+  });
+  infoIconData.addEventListener("click", () => {
+    alert(infoTextData.textContent);
   });
 
   function uploadFile() {
@@ -129,19 +128,26 @@ document.addEventListener("DOMContentLoaded", function () {
       reader.onload = (e) => {
         try {
           const jsonData = JSON.parse(e.target.result);
+          const keys = Object.keys(jsonData);
           const fileName = file.name;
           const timestamp = new Date().toLocaleString();
 
-          chrome.storage.local.set(
-            {
+          browser.storage.local
+            .set({
               courseData: jsonData,
               courseDataFilename: fileName,
               courseDataTimestamp: timestamp,
-            },
-            () => {
+            })
+            .then(() => {
               alert("File uploaded successfully");
-            }
-          );
+              browser.storage.sync
+                .set({
+                  courseDataInfo: initializeInfoFromCourseData(keys),
+                })
+                .then(() => {
+                  displayCourseDataOptions(keys.sort());
+                });
+            });
         } catch (error) {
           alert("Error parsing file: " + error);
         }
@@ -152,9 +158,176 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  function initializeInfoFromCourseData(courseDataKeys) {
+    let courseDataInfo = {};
+    for (let key of courseDataKeys) {
+      courseDataInfo[key] = false;
+      courseDataInfo[key + "Include"] = true;
+    }
+
+    return courseDataInfo;
+  }
+
+  function styleCheckbox(input) {
+    input.style.backgroundColor = input.checked ? "black" : "white";
+    input.style.borderColor = input.checked ? "black" : "white";
+    input.style.setProperty(
+      "--bs-form-switch-bg",
+      input.checked ? "blue" : "white"
+    );
+  }
+
+  function createCourseDataOptionsRow(key, container, courseDataInfo) {
+    let row = document.createElement("div");
+    row.className = "row align-items-center mb-2";
+
+    // label column
+    let labelCol = document.createElement("div");
+    labelCol.className = "col-6 text-start";
+    let label = document.createElement("label");
+    label.textContent = key;
+    label.className = "form-check-label me-2";
+    label.htmlFor = key;
+    labelCol.appendChild(label);
+
+    // switch column
+    let switchCol = document.createElement("div");
+    switchCol.className = "col-1";
+    switchCol.style.display = "flex";
+    switchCol.style.justifyContent = "center";
+    let switchDiv = document.createElement("div");
+    switchDiv.className = "form-check form-switch";
+    switchCol.appendChild(switchDiv);
+
+    let input = document.createElement("input");
+    input.className = "form-check-input";
+    input.type = "checkbox";
+    input.id = key;
+    switchDiv.appendChild(input);
+
+    // checkbox column
+    let checkboxCol = document.createElement("div");
+    checkboxCol.className = "col-1";
+    checkboxCol.style.display = "flex";
+    checkboxCol.style.justifyContent = "center";
+    let checkboxDiv = document.createElement("div");
+    checkboxDiv.className = "form-check";
+    checkboxCol.appendChild(checkboxDiv);
+
+    let checkbox = document.createElement("input");
+    checkbox.className = "form-check-input";
+    checkbox.type = "checkbox";
+    checkbox.id = key + "Include";
+    checkboxDiv.appendChild(checkbox);
+
+    if (courseDataInfo !== undefined) {
+      input.checked = courseDataInfo[key];
+      checkbox.checked = courseDataInfo[key + "Include"];
+    }
+    styleCheckbox(input);
+
+    input.addEventListener("change", () => {
+      styleCheckbox(input);
+      browser.storage.sync.get(["courseDataInfo"]).then((storage) => {
+        let courseDataInfo = storage.courseDataInfo || {};
+        courseDataInfo[key] = input.checked;
+        browser.storage.sync.set({ courseDataInfo: courseDataInfo });
+      });
+    });
+
+    checkbox.addEventListener("change", () => {
+      browser.storage.sync.get(["courseDataInfo"]).then((storage) => {
+        let courseDataInfo = storage.courseDataInfo || {};
+        courseDataInfo[key + "Include"] = checkbox.checked;
+        browser.storage.sync.set({ courseDataInfo: courseDataInfo });
+      });
+    });
+
+    row.appendChild(labelCol);
+    row.appendChild(switchCol);
+    row.appendChild(checkboxCol);
+    container.appendChild(row);
+  }
+
+  function displayCourseDataOptions(courseDataKeys) {
+    if (courseDataKeys.length > 30) {
+      alert(
+        "Course data has more than 30 keys where there should be courses. Likely incorrect format."
+      );
+      return;
+    }
+
+    let optionsContainer = document.getElementById("courseOptionsContainer");
+    titleText =
+      "Identify which side each course is meant for and set whether to enable it for move highlighting:";
+    switchLabelText = "Color";
+    checkboxLabelText = "Include";
+    createOptionsTitleRow(
+      optionsContainer,
+      titleText,
+      switchLabelText,
+      checkboxLabelText
+    );
+
+    browser.storage.sync.get(["courseDataInfo"]).then((storage) => {
+      for (let key of courseDataKeys) {
+        createCourseDataOptionsRow(
+          key,
+          optionsContainer,
+          storage.courseDataInfo
+        );
+      }
+    });
+  }
+
+  function createOptionsTitleRow(
+    container,
+    titleText,
+    switchLabelText,
+    checkboxLabelText
+  ) {
+    container.innerHTML = "";
+
+    const titleRow = document.createElement("div");
+    titleRow.className = "row align-items-center mb-3";
+
+    // title column
+    const titleCol = document.createElement("div");
+    titleCol.className = "col-6 text-start";
+    titleCol.id = "titleCol";
+    const titleLabel = document.createElement("span");
+    titleLabel.textContent = titleText;
+    titleCol.appendChild(titleLabel);
+
+    // switch column
+    const switchCol = document.createElement("div");
+    switchCol.className = "col-1";
+    switchCol.id = "switchCol";
+    switchCol.style.display = "flex";
+    switchCol.style.justifyContent = "center";
+    const switchLabel = document.createElement("span");
+    switchLabel.textContent = switchLabelText;
+    switchCol.appendChild(switchLabel);
+
+    // checkbox column
+    const checkboxCol = document.createElement("div");
+    checkboxCol.className = "col-1";
+    checkboxCol.id = "checkboxCol";
+    checkboxCol.style.display = "flex";
+    checkboxCol.style.justifyContent = "center";
+    const checkboxLabel = document.createElement("span");
+    checkboxLabel.textContent = checkboxLabelText;
+    checkboxCol.appendChild(checkboxLabel);
+
+    titleRow.appendChild(titleCol);
+    titleRow.appendChild(switchCol);
+    titleRow.appendChild(checkboxCol);
+    container.appendChild(titleRow);
+  }
+
   function submitBlacklist() {
     blacklistInput.style.height = "auto";
-    blacklistInput.style.height = blacklistInput.scrollHeight + "px";
+    blacklistInput.style.height = blacklistInput.scrollHeight + 5 + "px";
 
     if (blacklistInput.value === "") {
       return;
@@ -164,26 +337,30 @@ document.addEventListener("DOMContentLoaded", function () {
       return item.trim();
     });
     var blacklist = [...new Set(blacklist)];
-
-    chrome.storage.sync.set({ blacklist: blacklist }, function () {});
+    browser.storage.sync.set({ blacklist: blacklist });
   }
 
   function submitCategories() {
     categoriesInput.style.height = "auto";
-    categoriesInput.style.height = categoriesInput.scrollHeight + "px";
+    categoriesInput.style.height = categoriesInput.scrollHeight + 5 + "px";
     let value = categoriesInput.value;
 
     if (value === "") {
       input = {};
     } else {
-      input = JSON.parse(value);
+      try {
+        input = JSON.parse(value);
+      } catch (error) {
+        alert("Error parsing JSON: " + error);
+        return;
+      }
     }
 
     if (typeof input === "object" && Object.keys(input).length > 0) {
       var newCategories = input;
     } else return;
 
-    chrome.storage.sync.set({ categories: newCategories }, function () {});
+    browser.storage.sync.set({ categories: newCategories });
   }
 
   function submitRename() {
@@ -194,92 +371,54 @@ document.addEventListener("DOMContentLoaded", function () {
     if (value === "") {
       input = {};
     } else {
-      input = JSON.parse(value);
+      try {
+        input = JSON.parse(value);
+      } catch (error) {
+        alert("Error parsing JSON: " + error);
+        return;
+      }
     }
 
     if (typeof input === "object") {
       var newRename = input;
     } else return;
 
-    chrome.storage.sync.set({ rename: newRename }, function () {});
-  }
-
-  function handleKeydown(inputElement, key) {
-    return function (event) {
-      if (event.keyCode === 13) {
-        event.preventDefault();
-        submitData(inputElement, key);
-      }
-    };
-  }
-
-  function submitData(inputElement, key) {
-    inputElement.style.height = "auto";
-    inputElement.style.height = inputElement.scrollHeight + "px";
-    let input = inputElement.value;
-
-    if (key === "categories" || key === "rename") {
-      processedInput = processJSONInput(input);
-    } else if (key === "blacklist") {
-      processedInput = processBlacklist(input);
-    }
-
-    chrome.storage.sync.set({ [key]: processedInput });
-  }
-
-  function processBlacklist(input) {
-    try {
-      let blacklist = input.split(",").map((item) => item.trim());
-      return [...new Set(blacklist)];
-    } catch (error) {
-      console.error("error processing blacklist", error);
-      return [];
-    }
-  }
-
-  function processJSONInput(input) {
-    try {
-      let value = JSON.parse(input);
-      if (typeof value === "object" && value !== null) {
-        return value;
-      }
-    } catch (error) {
-      console.error("invalid json input", error);
-    }
-    return {};
+    browser.storage.sync.set({ rename: newRename });
   }
 
   function initializeCheckboxes() {
-    chrome.storage.sync.get(
-      ["removeNotifs", "filterToggle", "categoriesToggle", "sideAgnostic"],
-      function (options) {
+    browser.storage.sync
+      .get([
+        "removeNotifs",
+        "filterToggle",
+        "categoriesToggle",
+        "sideAgnostic",
+        "highlightMoves",
+        "removeWiki",
+      ])
+      .then(function (options) {
         checkboxes.forEach(function (checkbox) {
           checkbox.checked = options[checkbox.id];
         });
-      }
-    );
+      });
   }
 
   function addCheckboxListeners() {
     checkboxes.forEach((checkbox) => {
       checkbox.addEventListener("change", function (event) {
-        let obj = {};
-        obj[event.target.id] = event.target.checked;
-        chrome.storage.sync.set(obj, function () {
-          console.log(
-            `Option ${event.target.id} set to ${event.target.checked} and saved to chrome storage`
-          );
-        });
+        browser.storage.sync.set({ [event.target.id]: event.target.checked });
       });
     });
   }
 
-  function resizeInput(input, obj) {
-    input.value = JSON.stringify(obj, null, 2);
+  function resizeInput(input, obj, stringify = true) {
+    if (stringify) {
+      input.value = JSON.stringify(obj, null, 2);
+    }
     input.style.whiteSpace = "pre";
     input.style.width = "auto";
     input.style.height = "auto";
-    input.style.width = input.scrollWidth + "px";
-    input.style.height = input.scrollHeight + "px";
+    input.style.width = input.scrollWidth + 25 + "px";
+    input.style.height = input.scrollHeight + 5 + "px";
   }
 });
