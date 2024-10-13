@@ -1,10 +1,3 @@
-browser.runtime.sendMessage({ method: "getSelectorTree" }).then((response) => {
-  for (let key in response) {
-    const selector = document.createElement("div");
-    selector.addEventListener("click", setPosition(response[key]));
-  }
-});
-
 function createPositionCard(title, fen) {
   const card = document.createElement("div");
   card.textContent(title);
@@ -29,7 +22,10 @@ function createPositionCard(title, fen) {
   deleteDiv.appendChild(deleteButton);
 }
 
-function setBoardPosition(fen) {}
+function setBoardPosition(fen) {
+  const url = "https://lichess.org/analysis/" + fen;
+  window.location.replace(url);
+}
 
 function parseSelectorTree(selectorTree, parent = true) {
   let isNested = typeof selectorTree[Object.keys(selectorTree)[0]] === "object";
