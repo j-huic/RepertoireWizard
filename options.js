@@ -21,9 +21,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const fileStatusMessage = document.getElementById("fileStatusMessage");
   const clearData = document.getElementById("clearData");
 
-  chrome.storage.sync.get(
-    ["blacklist", "categories", "rename"],
-    function (storage) {
+  browser.storage.sync
+    .get(["blacklist", "categories", "rename"])
+    .then(function (storage) {
       if (storage.blacklist) {
         blacklistInput.value = storage.blacklist.join(", ");
         blacklistInput.style.height = "auto";
@@ -37,12 +37,11 @@ document.addEventListener("DOMContentLoaded", function () {
         renameInput.value = JSON.stringify(storage.rename, null, 2);
         resizeInput(renameInput, storage.rename);
       }
-    }
-  );
+    });
 
-  chrome.storage.local.get(
-    ["courseData", "courseDataFilename", "courseDataTimestamp"],
-    function (storage) {
+  browser.storage.local
+    .get(["courseData", "courseDataFilename", "courseDataTimestamp"])
+    .then(function (storage) {
       if (storage.courseData) {
         displayCourseDataOptions(Object.keys(storage.courseData).sort());
         fileStatusMessage.textContent =
@@ -52,8 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
           storage.courseDataTimestamp +
           ")";
       }
-    }
-  );
+    });
 
   blacklistSubmit.addEventListener("click", submitBlacklist);
   categoriesSubmit.addEventListener("click", submitCategories);
@@ -80,22 +78,22 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   clearBlacklist.addEventListener("click", function () {
-    chrome.storage.sync.set({ blacklist: [] }, function () {
+    browser.storage.sync.set({ blacklist: [] }).then(function () {
       blacklistInput.value = "";
     });
   });
   clearCategories.addEventListener("click", function () {
-    chrome.storage.sync.remove("categories", function () {
+    browser.storage.sync.remove("categories").then(function () {
       categoriesInput.value = "";
     });
   });
   clearRename.addEventListener("click", function () {
-    chrome.storage.sync.remove("rename", function () {
+    browser.storage.sync.remove("rename").then(function () {
       renameInput.value = "";
     });
   });
   clearData.addEventListener("click", function () {
-    chrome.storage.local.remove("courseData", function () {
+    browser.storage.local.remove("courseData").then(function () {
       fileStatusMessage.textContent = "";
       document.getElementById("courseOptionsContainer").innerHTML = "";
     });
@@ -134,24 +132,22 @@ document.addEventListener("DOMContentLoaded", function () {
           const fileName = file.name;
           const timestamp = new Date().toLocaleString();
 
-          chrome.storage.local.set(
-            {
+          browser.storage.local
+            .set({
               courseData: jsonData,
               courseDataFilename: fileName,
               courseDataTimestamp: timestamp,
-            },
-            () => {
+            })
+            .then(() => {
               alert("File uploaded successfully");
-              chrome.storage.sync.set(
-                {
+              browser.storage.sync
+                .set({
                   courseDataInfo: initializeInfoFromCourseData(keys),
-                },
-                () => {
+                })
+                .then(() => {
                   displayCourseDataOptions(keys.sort());
-                }
-              );
-            }
-          );
+                });
+            });
         } catch (error) {
           alert("Error parsing file: " + error);
         }
@@ -232,18 +228,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     input.addEventListener("change", () => {
       styleCheckbox(input);
-      chrome.storage.sync.get(["courseDataInfo"], (storage) => {
+      browser.storage.sync.get(["courseDataInfo"]).then((storage) => {
         let courseDataInfo = storage.courseDataInfo || {};
         courseDataInfo[key] = input.checked;
-        chrome.storage.sync.set({ courseDataInfo: courseDataInfo });
+        browser.storage.sync.set({ courseDataInfo: courseDataInfo });
       });
     });
 
     checkbox.addEventListener("change", () => {
-      chrome.storage.sync.get(["courseDataInfo"], (storage) => {
+      browser.storage.sync.get(["courseDataInfo"]).then((storage) => {
         let courseDataInfo = storage.courseDataInfo || {};
         courseDataInfo[key + "Include"] = checkbox.checked;
-        chrome.storage.sync.set({ courseDataInfo: courseDataInfo });
+        browser.storage.sync.set({ courseDataInfo: courseDataInfo });
       });
     });
 
@@ -273,7 +269,7 @@ document.addEventListener("DOMContentLoaded", function () {
       checkboxLabelText
     );
 
-    chrome.storage.sync.get(["courseDataInfo"], (storage) => {
+    browser.storage.sync.get(["courseDataInfo"]).then((storage) => {
       for (let key of courseDataKeys) {
         createCourseDataOptionsRow(
           key,
@@ -341,7 +337,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return item.trim();
     });
     var blacklist = [...new Set(blacklist)];
-    chrome.storage.sync.set({ blacklist: blacklist }, function () {});
+    browser.storage.sync.set({ blacklist: blacklist });
   }
 
   function submitCategories() {
@@ -364,7 +360,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var newCategories = input;
     } else return;
 
-    chrome.storage.sync.set({ categories: newCategories }, function () {});
+    browser.storage.sync.set({ categories: newCategories });
   }
 
   function submitRename() {
@@ -387,31 +383,30 @@ document.addEventListener("DOMContentLoaded", function () {
       var newRename = input;
     } else return;
 
-    chrome.storage.sync.set({ rename: newRename }, function () {});
+    browser.storage.sync.set({ rename: newRename });
   }
 
   function initializeCheckboxes() {
-    chrome.storage.sync.get(
-      [
+    browser.storage.sync
+      .get([
         "removeNotifs",
         "filterToggle",
         "categoriesToggle",
         "sideAgnostic",
         "highlightMoves",
         "removeWiki",
-      ],
-      function (options) {
+      ])
+      .then(function (options) {
         checkboxes.forEach(function (checkbox) {
           checkbox.checked = options[checkbox.id];
         });
-      }
-    );
+      });
   }
 
   function addCheckboxListeners() {
     checkboxes.forEach((checkbox) => {
       checkbox.addEventListener("change", function (event) {
-        chrome.storage.sync.set({ [event.target.id]: event.target.checked });
+        browser.storage.sync.set({ [event.target.id]: event.target.checked });
       });
     });
   }
