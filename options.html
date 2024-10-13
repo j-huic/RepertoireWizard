@@ -51,7 +51,7 @@
       <label for="blacklistInput">Filter Courses From the Dropdown</label>
       <i
         class="bi bi-info-circle mt-3 ml-3"
-        id="infoIconBlacklist"
+        id="blacklistInfoIcon"
         style="cursor: pointer; font-size: 1.15rem"
       ></i>
       <textarea
@@ -64,11 +64,16 @@
       <button class="btn btn-primary mt-2" type="button" id="blacklistSubmit">
         Submit
       </button>
-      <button class="btn btn-secondary mt-2" type="button" id="clearBlacklist">
+      <button
+        class="btn btn-secondary mt-2"
+        type="button"
+        id="blacklistClear"
+        for="blacklistInput"
+      >
         Clear Blacklist
       </button>
       <!-- prettier-ignore -->
-      <div id="infoTextBlacklist" style="display: none">Add blacklisted keywords to filter out unwanted courses (separate with commas; not case sensitive).
+      <div id="blacklistInfoText" style="display: none">Add blacklisted keywords to filter out unwanted courses (separate with commas; not case sensitive).
       </div>
     </div>
 
@@ -78,7 +83,7 @@
       <label for="categoriesInput">Organize Courses by Category</label>
       <i
         class="bi bi-info-circle mt-3 ml-3"
-        id="infoIconCat"
+        id="categoriesInfoIcon"
         style="cursor: pointer; font-size: 1.15rem"
       ></i>
       <textarea
@@ -93,11 +98,16 @@
       <button class="btn btn-primary mt-2" type="button" id="categoriesSubmit">
         Submit
       </button>
-      <button class="btn btn-secondary mt-2" type="button" id="clearCategories">
+      <button
+        class="btn btn-secondary mt-2"
+        type="button"
+        id="categoriesClear"
+        for="categoriesInput"
+      >
         Clear Categories
       </button>
       <!-- prettier-ignore -->
-      <div id="infoTextCat" style="display: none">Add dictionary with categories for keys and arrays of keywords for values (keywords are not case sensitive and are applied before the renaming). 
+      <div id="categoriesInfoText" style="display: none">Add dictionary with categories for keys and arrays of keywords for values (keywords are not case sensitive and are applied before the renaming). 
 E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
       </div>
     </div>
@@ -108,7 +118,7 @@ E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
       <label for="renameInput">Rename Courses</label>
       <i
         class="bi bi-info-circle mt-3 ml-3"
-        id="infoIconRename"
+        id="renameInfoIcon"
         style="cursor: pointer; font-size: 1.15rem"
       ></i>
       <textarea
@@ -123,34 +133,78 @@ E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
       <button class="btn btn-primary mt-2" type="button" id="renameSubmit">
         Submit
       </button>
-      <button class="btn btn-secondary mt-2" type="button" id="clearRename">
+      <button
+        class="btn btn-secondary mt-2"
+        type="button"
+        id="renameClear"
+        for="renameInput"
+      >
         Clear Rename
       </button>
       <!-- prettier-ignore -->
-      <div id="infoTextRename" style="display: none; white-space: noemal">Rename courses by adding a dictionary with original course name as key and new name as value. E.g. {"Lifetime Repertoires: Sam Shankland's d4 - Part 1": "Shanland d4 - QGA/Slav"} (not case sensitive)
+      <div id="renameInfoText" style="display: none; white-space: normal">Rename courses by adding a dictionary with original course name as key and new name as value. E.g. {"Lifetime Repertoires: Sam Shankland's d4 - Part 1": "Shanland d4 - QGA/Slav"} (not case sensitive)
       </div>
     </div>
 
     <br />
 
     <div class="form-group">
-      <label for="fileInput" class="form-label mt-3"
+      <label for="positionsInput">Add Position Selector Tree</label>
+      <i
+        class="bi bi-info-circle mt-3 ml-3"
+        id="positionsInfoIcon"
+        style="cursor: pointer; font-size: 1.15rem"
+      ></i>
+      <textarea
+        class="form-control mt-1 mb-1"
+        rows="1"
+        cols="20"
+        id="positionsInput"
+        name="positionsInput"
+        wrap="hard"
+        style="resize: both; overflow: auto"
+      ></textarea>
+      <button class="btn btn-primary mt-2" type="button" id="positionsSubmit">
+        Submit
+      </button>
+      <button
+        class="btn btn-secondary mt-2"
+        type="button"
+        id="positionsClear"
+        for="positionsInput"
+      >
+        Clear Rename
+      </button>
+      <!-- prettier-ignore -->
+      <div id="positionsInfoText" style="display: none; white-space: normal">
+        </div>
+    </div>
+
+    <br />
+
+    <div class="form-group">
+      <label for="dataInput" class="form-label mt-3"
         >Upload Course Recommendation Data</label
       >
       <i
         class="bi bi-info-circle mt-3 ml-3"
-        id="infoIconData"
+        id="dataInfoIcon"
         style="cursor: pointer; font-size: 1.15rem"
       ></i>
       <!-- prettier-ignore -->
-      <div id="infoTextData" style="display: none">Upload a .json file where each key is a course name, and where each value is an object in itself with FEN strings as keys and a list of move strings as values.
+      <div id="dataInfoText" style="display: none">Upload a .json file where each key is a course name, and where each value is an object in itself with FEN strings as keys and a list of move strings as values.
 E.g. {"d4": {"fenstring" : ["Nf6", "d5", "c5", "f5"]}}
 Important: FEN strings must be cut off after the "-" in order to recognize transpositions.
       </div>
       <div id="fileStatusMessage" class="mt-2"></div>
-      <input type="file" id="fileInput" class="form-control" accept=".json" />
-      <button id="uploadFileButton" class="btn btn-primary mt-2">Upload</button>
-      <button class="btn btn-secondary mt-2" type="button" id="clearData">
+      <input type="file" id="dataInput" class="form-control" accept=".json" />
+      <button id="dataSubmit" class="btn btn-primary mt-2">Upload</button>
+      <button
+        class="btn btn-secondary mt-2"
+        type="button"
+        id="dataClear"
+        for="dataInput"
+      >
         Clear Data
       </button>
     </div>
