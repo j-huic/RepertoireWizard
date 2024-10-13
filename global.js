@@ -1,4 +1,4 @@
-chrome.runtime.sendMessage({ method: "getOptions" }, function (response) {
+browser.runtime.sendMessage({ method: "getOptions" }).then((response) => {
   removeNotifs = response.removeNotifs;
 
   if (removeNotifs) {
@@ -10,4 +10,3 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (response) {
 });
 
 console.log("global script running");
-// fenfetch()

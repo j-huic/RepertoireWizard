@@ -5,7 +5,6 @@ browser.runtime.onMessage.addListener((request, sender) => {
   if (request.method === "getOptions") {
     return handleGetOptions();
   } else if (request.method === "getBlacklist") {
-    console.log("getBlacklist");
     return handleGetBlacklist();
   } else if (request.method === "getCategories") {
     return handleGetCategories();
@@ -15,9 +14,15 @@ browser.runtime.onMessage.addListener((request, sender) => {
     return handleGetData(request);
   } else if (request.method === "getUCI") {
     return handleGetUCI(request.fen, request.move);
+  } else if (request.method === "getSelectorTree") {
+    handleGetSelectorTree();
   }
   return Promise.resolve();
 });
+
+function handleGetSelectorTree() {
+  return browser.storage.sync.get("getSelectorTree");
+}
 
 function handleGetUCI(fen, algMove) {
   let chess = new Chess(fen);
@@ -48,7 +53,6 @@ function handleGetBlacklist() {
   return browser.storage.sync
     .get(["blacklist", "filterToggle"])
     .then((item) => {
-      console.log(item);
       if (item.filterToggle) return item;
       else return false;
     });

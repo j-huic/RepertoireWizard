@@ -2,7 +2,7 @@ var oldFen = "";
 var allcourses = {};
 var options = {};
 
-chrome.runtime.sendMessage({ method: "getOptions" }, function (response) {
+browser.runtime.sendMessage({ method: "getOptions" }).then((response) => {
   options = response;
 
   if (options.removeWiki) {
@@ -10,7 +10,7 @@ chrome.runtime.sendMessage({ method: "getOptions" }, function (response) {
   }
 
   if (options.highlightMoves) {
-    chrome.storage.local.get("courseData", function (result) {
+    browser.storage.local.get("courseData").then((result) => {
       allcourses = result.courseData;
       if (allcourses) {
         mainObserver.observe(document, { childList: true, subtree: true });
@@ -168,14 +168,13 @@ function createMoveCard(move, fen) {
   let tr = document.createElement("tr");
   tr.setAttribute("origin", "manufactured");
 
-  chrome.runtime.sendMessage(
-    { method: "getUCI", fen: fen, move: move },
-    (response) => {
+  browser.runtime
+    .sendMessage({ method: "getUCI", fen: fen, move: move })
+    .then((response) => {
       if (response) {
         tr.setAttribute("data-uci", response);
       }
-    }
-  );
+    });
 
   const tdMove = document.createElement("td");
   tdMove.textContent = move;

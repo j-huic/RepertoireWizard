@@ -34,7 +34,7 @@
   "content_scripts": [
     {
       "matches": ["*://www.chessable.com/*"],
-      "js": ["global.js"]
+      "js": ["libs/browser-polyfill.js", "global.js"]
     },
     {
       "matches": ["*://www.chessable.com/explore/*"],
@@ -47,7 +47,7 @@
     },
     {
       "matches": ["*://lichess.org/*"],
-      "js": ["moveHighlighting.js"]
+      "js": ["libs/browser-polyfill.js", "moveHighlighting.js"]
     }
   ]
 }
