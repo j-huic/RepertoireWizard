@@ -1,4 +1,4 @@
-cogwheel = document.getElementById("settingsButton");
+const cogwheel = document.getElementById("settingsButton");
 cogwheel.addEventListener("click", () => {
-  chrome.runtime.openOptionsPage();
+  browser.runtime.openOptionsPage();
 });
