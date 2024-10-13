@@ -7,6 +7,9 @@
     "gecko": {
       "id": "repertoirehelper@1.1.com",
       "strict_min_version": "112.0"
+    },
+    "gecko_android": {
+      "strict_min_version": "113.0"
     }
   },
   "icons": {
