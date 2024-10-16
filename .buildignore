@@ -6,6 +6,7 @@ misc/
 externalassets/
 test/
 coursefiles/
+bs/
 fetch.js
 package.json
 package-lock.json
