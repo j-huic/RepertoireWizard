@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Repertoire Helper",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Brings together the best of Chessable and Lichess",
   "browser_specific_settings": {
     "gecko": {
@@ -30,18 +30,18 @@
     "open_in_tab": true
   },
   "background": {
-    "scripts": ["background.js"],
+    "scripts": ["libs/browser-polyfill.js", "background.js"],
     "type": "module"
   },
   "permissions": ["storage"],
   "content_scripts": [
     {
       "matches": ["*://www.chessable.com/*"],
-      "js": ["global.js"]
+      "js": ["libs/browser-polyfill.js", "global.js"]
     },
     {
       "matches": ["*://www.chessable.com/explore/*"],
-      "js": ["dropdownFilter.js"]
+      "js": ["libs/browser-polyfill.js", "dropdownFilter.js"]
     },
     {
       "matches": ["*://www.chessable.com/analysis/*"],
@@ -50,11 +50,15 @@
     },
     {
       "matches": ["*://lichess.org/*"],
-      "js": ["moveHighlighting.js"]
+      "js": [
+        "libs/browser-polyfill.js",
+        "moveHighlighting.js",
+        "positionSelector.js"
+      ]
     },
     {
-      "matches": ["*://lichess.org/analysis/*"],
-      "js": ["positionSelector.js"]
+      "matches": ["*://lichess.org/analysis/*", "*://lichess.org/analysis"],
+      "js": ["libs/browser-polyfill.js", "positionSelector.js"]
     }
   ]
 }

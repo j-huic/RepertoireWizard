@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Repertoire Helper",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Brings together the best of Chessable and Lichess",
   "icons": {
     "128": "assets/icon128.png",

@@ -2,10 +2,6 @@ let treeExpansionState = {};
 let leafNodeColors = {};
 let positions = {};
 
-// let wiki = document.getElementsByClassName("analyse__wiki empty")[0];
-// if (wiki) {
-//   wiki.remove();
-// }
 browser.storage.sync
   .get([
     "positions",
