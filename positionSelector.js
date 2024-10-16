@@ -1,4 +1,5 @@
 let treeExpansionState = {};
+let leafNodeColors = {};
 let positions = {};
 
 let wiki = document.getElementsByClassName("analyse__wiki empty")[0];
@@ -7,10 +8,13 @@ if (wiki) {
 }
 
 browser.storage.sync
-  .get(["positions", "treeExpansionState"])
+  .get(["positions", "treeExpansionState", "leafNodeColors"])
   .then((storage) => {
     if (storage.treeExpansionState) {
       treeExpansionState = storage.treeExpansionState;
+    }
+    if (storage.leafNodeColors) {
+      leafNodeColors = storage.leafNodeColors;
     }
     if (storage.positions) {
       positions = storage.positions;
@@ -18,12 +22,12 @@ browser.storage.sync
     }
   });
 
-function setBoardPosition(fen) {
-  const url = "https://lichess.org/analysis/" + fen;
+function setBoardPosition(fen, side = "white") {
+  const url = "https://lichess.org/analysis/" + fen + "?color=" + side;
   window.location.replace(url);
 }
 
-function parseSelectorTree(selectorTree, depth = 0, parentNode = {}) {
+function parseSelectorTree(selectorTree, path = []) {
   let hasLeafNodes =
     typeof selectorTree[Object.keys(selectorTree)[0]] === "object";
 
@@ -31,15 +35,8 @@ function parseSelectorTree(selectorTree, depth = 0, parentNode = {}) {
     const list = document.createElement("ul");
     list.style.paddingLeft = "20px";
     for (let key in selectorTree) {
-      let listItem = document.createElement("li");
-      listItem.textContent = key;
-      listItem.style.color = "#ADD8E6";
-      listItem.style.textDecoration = "underline";
-      listItem.style.cursor = "pointer";
-      listItem.addEventListener("click", () => {
-        setBoardPosition(selectorTree[key]);
-      });
-      listItem.appendChild(addSwitch());
+      const nodeKey = path.concat(key).join("/");
+      const listItem = addLeafNodeListItem(key, selectorTree, nodeKey);
       list.appendChild(listItem);
     }
     return list;
@@ -47,50 +44,24 @@ function parseSelectorTree(selectorTree, depth = 0, parentNode = {}) {
     let div = document.createElement("div");
     div.style.display = "flex";
     div.style.flexDirection = "column";
-    if (depth > 0) {
+    if (path.length === 0) {
+      div.style.marginTop = "20px";
+    } else {
       div.style.paddingLeft = "20px";
     }
 
     // Add functionality to parent div
 
-    if (depth === 0) {
-      const addButton = addBigPlusButton(selectorTree);
+    if (path.length === 0) {
+      const addButton = addBigPlusButton();
       div.appendChild(addButton);
     }
 
     for (let key in selectorTree) {
-      const details = document.createElement("details");
-      details.style.paddingTop = "3px";
-      const summary = document.createElement("summary");
-      const stateKey = `${key}_${depth}`;
-      if (stateKey in treeExpansionState) {
-        details.open = treeExpansionState[stateKey];
-      }
-
-      // Create a container for the summary content
-      const summaryContent = document.createElement("span");
-      summaryContent.textContent = key;
-      summary.appendChild(summaryContent);
-
-      const gap = document.createElement("span");
-      gap.className = "col-1";
-      summary.appendChild(gap);
-      const addIcon = addPlusButton(selectorTree[key], stateKey);
-      const addFenIcon = addAtButton(selectorTree[key]);
-      const addXIcon = addXButton(key, selectorTree, stateKey);
-
-      summary.appendChild(addIcon);
-      summary.appendChild(addFenIcon);
-      summary.appendChild(addXIcon);
-      details.appendChild(summary);
-
-      details.addEventListener("toggle", () => {
-        treeExpansionState[stateKey] = details.open;
-        browser.storage.sync.set({ treeExpansionState: treeExpansionState });
-      });
-
+      const stateKey = path.concat(key).join("/");
+      const details = addDetailsRow(selectorTree, key, stateKey);
       details.appendChild(
-        parseSelectorTree(selectorTree[key], depth + 1, selectorTree)
+        parseSelectorTree(selectorTree[key], path.concat(key))
       );
       div.appendChild(details);
     }
@@ -98,41 +69,174 @@ function parseSelectorTree(selectorTree, depth = 0, parentNode = {}) {
   }
 }
 
-function addBigPlusButton(selectorTree) {
+function createSelectorContainer() {
+  const div = document.createElement("div");
+  div.style.marginTop = "20px";
+  const buttonBar = document.createElement("div");
+  const bigAddButton = addBigPlusButton();
+  const bigAtButton = addBigAtButton();
+  const bigInfoButton = addBigInfoButton();
+
+  buttonBar.appendChild(bigAddButton);
+  buttonBar.appendChild(bigAtButton);
+  buttonBar.appendChild(bigInfoButton);
+  div.appendChild(buttonBar);
+
+  return div;
+}
+
+function renderSelectorTree(selectorTree, path = []) {
+  const nodeDiv = document.createElement("div");
+  const fenList = document.createElement("ul");
+
+  for (let key in selectorTree) {
+    const nodeKey = path.concat(key).join("/");
+
+    if (typeof selectorTree[key] === "string") {
+      const listItem = addLeafNodeListItem(key, selectorTree, nodeKey);
+      fenList.appendChild(listItem);
+    } else if (typeof selectorTree[key] === "object") {
+      const details = addDetailsRow(selectorTree, key, nodeKey);
+      details.appendChild(
+        renderSelectorTree(selectorTree[key], path.concat(key))
+      );
+      nodeDiv.appendChild(details);
+    }
+  }
+
+  const parentDiv = document.createElement("div");
+  if (path.length !== 0) parentDiv.style.paddingLeft = "20px";
+  parentDiv.appendChild(fenList);
+  parentDiv.appendChild(nodeDiv);
+  return parentDiv;
+}
+
+function addLeafNodeListItem(key, selectorTree, nodeKey) {
+  const listItem = document.createElement("li");
+  listItem.style.display = "flex";
+  listItem.style.alignItems = "center";
+  // listItem.style.justifyContent = "space-between";
+
+  const fenLink = document.createElement("span");
+  fenLink.textContent = key;
+  fenLink.style.color = "#ADD8E6";
+  fenLink.style.textDecoration = "underline";
+  fenLink.style.cursor = "pointer";
+
+  const switchContainer = document.createElement("span");
+  const switchButton = addSwitch(nodeKey);
+  switchContainer.appendChild(switchButton);
+  fenLink.addEventListener("click", () =>
+    setBoardPosition(selectorTree[key], switchButton.style.backgroundColor)
+  );
+
+  const xButtonContainer = document.createElement("span");
+  xButtonContainer.appendChild(addXButton(key, selectorTree));
+
+  listItem.appendChild(fenLink);
+  listItem.appendChild(switchContainer);
+  listItem.appendChild(xButtonContainer);
+
+  return listItem;
+}
+
+function addDetailsRow(selectorTree, key, stateKey) {
+  const details = document.createElement("details");
+  details.style.paddingTop = "3px";
+  const summary = document.createElement("summary");
+  if (stateKey in treeExpansionState) {
+    details.open = treeExpansionState[stateKey];
+  }
+
+  const summaryContent = document.createElement("span");
+  summaryContent.textContent = key;
+  summary.appendChild(summaryContent);
+
+  const addNodeIcon = addPlusButton(selectorTree[key], stateKey);
+  const addFenIcon = addAtButton(selectorTree[key]);
+  const deleteIcon = addXButton(key, selectorTree);
+
+  summary.appendChild(addNodeIcon);
+  summary.appendChild(addFenIcon);
+  summary.appendChild(deleteIcon);
+  details.appendChild(summary);
+
+  details.addEventListener("toggle", () => {
+    treeExpansionState[stateKey] = details.open;
+    browser.storage.sync.set({ treeExpansionState: treeExpansionState });
+  });
+
+  return details;
+}
+
+function addBigInfoButton() {
+  const infoButton = document.createElement("button");
+  infoButton.textContent = "i";
+  infoButton.style.marginBottom = "10px";
+  infoButton.style.marginLeft = "10px";
+  infoButton.style.width = "25px";
+  infoButton.style.height = "25px";
+  infoButton.addEventListener("click", () => {
+    alert(
+      `+ button adds a new category node\n@ button adds a new FEN link\nx button removes the node or link`
+    );
+  });
+  return infoButton;
+}
+
+function addBigPlusButton() {
   const addButton = document.createElement("button");
   addButton.textContent = "+";
   addButton.style.marginBottom = "10px";
   addButton.style.width = "25px";
   addButton.style.height = "25px";
   addButton.addEventListener("click", () => {
-    addNewChild(selectorTree);
+    addNewChild(positions);
     refreshTree();
   });
   return addButton;
 }
 
-function addSwitch() {
+function addBigAtButton() {
+  const button = document.createElement("button");
+  button.textContent = "@";
+  button.style.marginBottom = "10px";
+  button.style.marginLeft = "10px";
+  button.style.width = "25px";
+  button.style.height = "25px";
+  button.addEventListener("click", () => {
+    addFenLink(positions);
+    refreshTree();
+  });
+  return button;
+}
+
+function addSwitch(nodeKey) {
   const switchButton = document.createElement("div");
-  switchButton.id = "switch123";
+  switchButton.id = nodeKey;
   switchButton.style.width = "20px";
   switchButton.style.height = "15px";
   switchButton.style.borderRadius = "5px";
-  switchButton.style.border = "1px solid black";
-  switchButton.style.backgroundColor = "white";
   switchButton.style.display = "inline-block";
-  switchButton.style.marginLeft = "10px";
+  switchButton.style.marginLeft = "20px";
   switchButton.style.verticalAlign = "middle";
+  switchButton.style.backgroundColor = leafNodeColors[nodeKey] || "white";
+  switchButton.style.border = `1px solid ${
+    switchButton.style.backgroundColor === "white" ? "black" : "white"
+  }`;
 
   switchButton.addEventListener("click", (event) => {
-    // event.preventDefault();
     event.stopPropagation();
     if (switchButton.style.backgroundColor === "white") {
       switchButton.style.backgroundColor = "black";
       switchButton.style.border = "1px solid white";
+      leafNodeColors[nodeKey] = "black";
     } else {
       switchButton.style.backgroundColor = "white";
       switchButton.style.border = "1px solid black";
+      leafNodeColors[nodeKey] = "white";
     }
+    browser.storage.sync.set({ leafNodeColors: leafNodeColors });
   });
   return switchButton;
 }
@@ -166,19 +270,21 @@ function addAtButton(currentNode) {
   return addIcon;
 }
 
-function addXButton(childNode, parentNode, stateKey) {
-  const addIcon = document.createElement("span");
-  addIcon.textContent = "x";
-  addIcon.style.cursor = "pointer";
-  addIcon.style.marginLeft = "10px";
-  addIcon.addEventListener("click", (event) => {
+function addXButton(childNode, parentNode, isLeafNode = false) {
+  const xButton = document.createElement("span");
+  xButton.textContent = "x";
+  xButton.style.cursor = "pointer";
+  xButton.style.marginLeft = "10px";
+  if (isLeafNode) {
+    //
+  }
+  xButton.addEventListener("click", (event) => {
     event.stopPropagation();
     delete parentNode[childNode];
     browser.storage.sync.set({ positions: positions });
-    treeExpansionState[stateKey] = true;
     refreshTree();
   });
-  return addIcon;
+  return xButton;
 }
 
 function addNewChild(parentNode) {
@@ -203,9 +309,14 @@ function addFenLink(parentNode) {
 function refreshTree() {
   const side = document.querySelector("aside");
   if (side) {
+    const mselect = side.children[0];
     side.innerHTML = "";
-    const nestedlist = parseSelectorTree(positions);
-    side.appendChild(nestedlist);
+    side.appendChild(mselect);
+    const nestedlist = renderSelectorTree(positions);
+
+    const selectorDiv = createSelectorContainer();
+    selectorDiv.appendChild(nestedlist);
+    side.appendChild(selectorDiv);
   } else {
     console.error("Unable to find 'aside' element. Tree cannot be rendered.");
   }
