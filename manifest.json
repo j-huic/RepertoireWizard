@@ -41,7 +41,7 @@
       "js": ["libs/browser-polyfill.js", "moveHighlighting.js"]
     },
     {
-      "matches": ["https://lichess.org/analysis/*"],
+      "matches": ["https://lichess.org/analysis*"],
       "js": ["libs/browser-polyfill.js", "positionSelector.js"]
     }
   ]
