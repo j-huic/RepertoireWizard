@@ -25,7 +25,7 @@
   "content_scripts": [
     {
       "matches": ["https://www.chessable.com/*"],
-      "js": ["libs/browser-polyfill.js", "global.js"]
+      "js": ["libs/browser-polyfill.js", "global.js", "scrape.js"]
     },
     {
       "matches": ["https://www.chessable.com/explore/*"],

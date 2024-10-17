@@ -16,6 +16,8 @@ browser.runtime.onMessage.addListener((request, sender) => {
     return handleGetUCI(request.fen, request.move);
   } else if (request.method === "getSelectorTree") {
     handleGetSelectorTree();
+  } else if (request.method === "print") {
+    console.log(request.message);
   }
   return Promise.resolve();
 });
