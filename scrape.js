@@ -1,19 +1,32 @@
-console.log("scrape running");
-
 function getMovesFromChapter() {
-  let moveCards = document.getElementsByClassName("variation-card__moves");
-  let cardText = Array.from(moveCards).map((card) => card.innerHTML);
-  console.log(cardText);
+  const moveCards = document.getElementsByClassName("variation-card__moves");
+  const moveList = Array.from(moveCards).map((card) => card.textContent);
 
-  return moveCards;
+  const chapterName = document
+    .getElementsByClassName("courseUI-bookChapter")[0]
+    .textContent.split("Chapters")[1];
+  return { title: chapterName, moves: moveList };
 }
 
 function getChapterUrls() {
-  console.log(document.readyState);
-  console.log("getting card urls");
-  let cards = document.getElementsByClassName("levelBox");
-  let urls = Array.from(cards).map((card) => card.href);
-  return urls;
+  let courseTitle;
+  let urls;
+  try {
+    let header = document.getElementsByClassName("courseUI-header")[0];
+    courseTitle = header.textContent.split("Chapters")[0];
+  } catch (error) {
+    courseTitle = "uknown" + Math.random().toString(36).slice(2, 11);
+    console.error("Error retrieving course title", error);
+  }
+  try {
+    let cards = document.getElementsByClassName("levelBox");
+    urls = Array.from(cards).map((card) => card.href);
+  } catch (error) {
+    urls = [];
+    throw new Error("Failed to retrieve chapter urls from course page");
+  }
+
+  return { title: courseTitle, urls: urls };
 }
 
 async function fetchChapter(url) {
@@ -24,21 +37,16 @@ async function fetchChapter(url) {
   return document;
 }
 
-browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.method === "getCardUrls") {
     let urls = getChapterUrls();
-    // console.log(urls);
     sendResponse(urls);
+    return true;
   } else if (request.method === "getMoves") {
-    console.log("getmoves called");
-    let moves = getMovesFromChapter();
-    setTimeout(() => {
-      let cardText = Array.from(moves).map((card) => card.textContent);
-      console.log(cardText);
-      sendResponse(cardText);
-    }, 2000);
+    // getMovesFromChapter().then(sendResponse);
+    sendResponse(getMovesFromChapter());
+    // return true;
   }
-  return true;
 });
 
 browser.runtime.onMessage.addListener((request) => {
