@@ -7,13 +7,8 @@ const testButton = document.getElementById("testButton");
 testButton.addEventListener("click", async () => {
   consolePrint("test button clicked");
 
-  let cards = await getCardUrls(document);
-  let cardUrls = cards.urls;
-  consolePrint(cardUrls);
-  scrapeAllLinks(cardUrls.slice(0, 3));
+  browser.runtime.sendMessage({ method: "test" });
   // input = "https://www.chessable.com/course/91808/48/";
-  // let moves = await scrapeLink(input);
-  // consolePrint(moves, "moves");
 });
 
 async function parseChapterBatch(n) {

@@ -1,32 +1,28 @@
 function getMovesFromChapter() {
   const moveCards = document.getElementsByClassName("variation-card__moves");
-  const moveList = Array.from(moveCards).map((card) => card.textContent);
+  const pgnList = Array.from(moveCards).map((card) => card.textContent);
 
-  const chapterName = document
-    .getElementsByClassName("courseUI-bookChapter")[0]
-    .textContent.split("Chapters")[1];
-  return { title: chapterName, moves: moveList };
+  // const chapterName = document
+  //   .getElementsByClassName("courseUI-bookChapter")[0]
+  //   .textContent.split("Chapters")[1];
+
+  return pgnList;
 }
 
-function getChapterUrls() {
-  let courseTitle;
-  let urls;
-  try {
-    let header = document.getElementsByClassName("courseUI-header")[0];
-    courseTitle = header.textContent.split("Chapters")[0];
-  } catch (error) {
-    courseTitle = "uknown" + Math.random().toString(36).slice(2, 11);
-    console.error("Error retrieving course title", error);
-  }
-  try {
-    let cards = document.getElementsByClassName("levelBox");
-    urls = Array.from(cards).map((card) => card.href);
-  } catch (error) {
-    urls = [];
-    throw new Error("Failed to retrieve chapter urls from course page");
+function scrapeCoursePage() {
+  let chapterList = [];
+
+  let header = document.getElementsByClassName("courseUI-header")[0];
+  let courseTitle = header.textContent.split("Chapters")[0];
+  let cards = document.getElementsByClassName("levelBox");
+
+  for (let chapter of cards) {
+    let chapterTitle = chapter.children[0].textContent;
+    let chapterUrl = chapter.href;
+    chapterList.push({ title: chapterTitle, url: chapterUrl });
   }
 
-  return { title: courseTitle, urls: urls };
+  return { title: courseTitle, chapters: chapterList };
 }
 
 async function fetchChapter(url) {
@@ -38,8 +34,8 @@ async function fetchChapter(url) {
 }
 
 browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.method === "getCardUrls") {
-    let urls = getChapterUrls();
+  if (request.method === "scrapeCoursePage") {
+    let urls = scrapeCoursePage();
     sendResponse(urls);
     return true;
   } else if (request.method === "getMoves") {

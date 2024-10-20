@@ -1,7 +1,7 @@
 import { Chess } from "./libs/chess.js";
 import "./libs/browser-polyfill.js";
 
-browser.runtime.onMessage.addListener((request, sender) => {
+browser.runtime.onMessage.addListener(async (request, sender) => {
   if (request.method === "getOptions") {
     return handleGetOptions();
   } else if (request.method === "getBlacklist") {
@@ -24,9 +24,53 @@ browser.runtime.onMessage.addListener((request, sender) => {
   } else if (request.method === "startScrape") {
   } else if (request.method === "getChapterIndex") {
     handleGetChapterIndex();
+  } else if (request.method === "test") {
+    // let input = "https://www.chessable.com/course/91808/48/";
+    console.log("test activated");
+    let coursePage = await scrapeCoursePage();
+    let missingChapters = await getMissingChapters(coursePage);
+    let urls = missingChapters.map((chapter) => chapter.url);
+
+    // getMovesFromChapterList(urls.slice(0, 5)).then((data) => {
+    //   console.log(data);
+    // });
+    // let chapters = coursePage.chapters;
+    // let moves;
+
+    for (let chapter of missingChapters.slice(0, 3)) {
+      new Promise((resolve) => setTimeout(resolve, 100));
+      getMovesFromChapter(chapter.url).then((data) => {
+        saveChapterData(coursePage.title, chapter.title, data);
+      });
+      // moves = await getMovesFromChapter(chapter.url);
+      // saveChapterData(coursePage.title, chapter.title, moves);
+    }
+    console.log(await getMissingChapters(coursePage));
   }
   return Promise.resolve();
 });
+
+async function getMissingChapters(coursePage) {
+  const courseTitle = coursePage.title;
+  const { courseIndex } = await browser.storage.local.get("courseIndex");
+  console.log(courseIndex);
+
+  if (!courseIndex.hasOwnProperty(courseTitle)) {
+    return coursePage.chapters;
+  }
+
+  let allChapters = coursePage.chapters;
+  let existingChapters = courseIndex[courseTitle];
+  let missingChapters = [];
+
+  for (let chapter of allChapters) {
+    if (!existingChapters.includes(chapter.title)) {
+      missingChapters.push(chapter);
+    }
+  }
+
+  return missingChapters;
+}
 
 function handleGetChapterIndex() {
   browser.storage.local.get("chapterIndex").then((storage) => {
@@ -38,21 +82,119 @@ function handleGetChapterIndex() {
   });
 }
 
-async function parseChapterMoves(chapterData) {
-  let chapterUrl = chapterData.url;
-  let chapterTitle = chapterData.chapterData.title;
-  let pgnList = chapterData.chapterData.moves;
+async function scrapeCoursePage() {
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  const response = await browser.tabs.sendMessage(tabs[0].id, {
+    method: "scrapeCoursePage",
+  });
+  return response;
+}
+
+async function getMovesFromChapterList(urlList) {
+  const tabs = await Promise.all(
+    urlList.map((url) => browser.tabs.create({ url: url, active: false }))
+  );
+
+  try {
+    await Promise.all(tabs.map((tab) => waitForTabLoad(tab.id)));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const dataPromises = tabs.map((tab) =>
+      browser.tabs.sendMessage(tab.id, { method: "getMoves" })
+    );
+    const data = await Promise.all(dataPromises);
+
+    return data;
+  } catch (error) {
+    console.error("Error in getMovesFromChapters: ", error);
+  } finally {
+    await Promise.all(
+      tabs.map(async (tab) => {
+        try {
+          await browser.tabs.sendMessage(tab.id, { method: "getMoves" });
+        } catch (error) {
+          console.error(`Error retrieving data from tab ${tab.id}:`, error);
+        } finally {
+          await browser.tabs.remove(tab.id);
+        }
+      })
+    );
+  }
+}
+
+async function gmfcl(urls) {
+  for (let url of urls) {
+    const tab = browser.tabs.create({ url: url, active: false });
+  }
+}
+
+async function getMovesFromChapter(url) {
+  const tab = await browser.tabs.create({ url: url, active: false });
+  try {
+    await waitForTabLoad(tab.id);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const data = await browser.tabs.sendMessage(tab.id, { method: "getMoves" });
+    return data;
+  } catch (error) {
+    console.error("Error in getMovesFromChapter: ", error);
+  } finally {
+    await browser.tabs.remove(tab.id);
+  }
+}
+
+function waitForTabLoad(tabId) {
+  return new Promise((resolve) => {
+    browser.tabs.onUpdated.addListener(listener);
+
+    function listener(changedTabId, changeInfo) {
+      if (changedTabId === tabId && changeInfo.status === "complete") {
+        browser.tabs.onUpdated.removeListener(listener);
+        resolve();
+      }
+    }
+  });
+}
+
+async function saveChapterData(parentCourse, chapterTitle, pgnList) {
   let fenDict = pgnListToFenDict(pgnList);
+  let chapterKey = `${parentCourse}_${chapterTitle}`;
+  console.log(chapterKey);
   console.log(fenDict);
 
-  await browser.storage.local.set({ [chapterTitle]: fenDict });
+  await browser.storage.local.set({
+    [chapterKey]: fenDict,
+  });
 
-  const storage = browser.storage.local.get("chapterIndex");
-  let chapterIndex = storage.chapterIndex || [];
-  if (!chapterIndex.includes(chapterTitle)) {
-    chapterIndex.push(chapterTitle);
+  let { courseIndex = {} } = await browser.storage.local.get("courseIndex");
+  if (courseIndex.hasOwnProperty(parentCourse)) {
+    courseIndex[parentCourse].push(chapterTitle);
+  } else {
+    courseIndex[parentCourse] = [chapterTitle];
   }
-  await browser.storage.local.set({ chapterIndex: chapterIndex });
+  console.log(courseIndex);
+  await browser.storage.local.set({ courseIndex: courseIndex });
+}
+
+async function buildCourseDict(courseName) {
+  let courseIndex = await browser.storage.local.get("courseIndex");
+  if (courseIndex.hasOwnProperty(courseName)) {
+    let chapterList = courseIndex[courseName];
+  } else {
+    throw new Error("building a non-existant course");
+  }
+}
+
+function mergeDictList(dictList) {
+  if (dictList.length < 2) {
+    return dictList[0];
+  }
+
+  let bigDict = dictList[0];
+  for (let dict of dictList.slice(1)) {
+    mergeDictsFaster(bigDict, dict);
+  }
+
+  return bigDict;
 }
 
 function pgnListToFenDict(pgnList) {
