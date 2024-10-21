@@ -6,7 +6,6 @@ BUILD_DIR="build_ff"
 BASE_NAME="RepertoireHelper"
 IGNORE_FILE=".buildignore"
 
-# Create build directory if it doesn't exist
 mkdir -p "$BUILD_DIR"
 
 if [ ! -f "$IGNORE_FILE" ]; then
@@ -16,10 +15,8 @@ fi
 
 process_ignore_patterns() {
     while IFS= read -r line || [[ -n "$line" ]]; do
-        # Skip empty lines and comments
         [[ -z "$line" || "$line" == \#* ]] && continue
         
-        # If line ends with /, add * after it
         if [[ "$line" == */ ]]; then
             echo -n " -x \"$line*\""
         else
@@ -30,7 +27,6 @@ process_ignore_patterns() {
 
 IGNORE_PATTERNS=$(process_ignore_patterns)
 
-# Find an available filename
 COUNTER=1
 OUTPUT_FILE="$BUILD_DIR/${BASE_NAME}.xpi"
 while [ -f "$OUTPUT_FILE" ]; do
@@ -38,7 +34,6 @@ while [ -f "$OUTPUT_FILE" ]; do
     ((COUNTER++))
 done
 
-# Temporarily replace the original manifest.json with manifest_firefox.json
 cp manifest_firefox.json manifest.json
 
 # Construct and execute the zip command

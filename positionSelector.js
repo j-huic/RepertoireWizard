@@ -2,14 +2,17 @@ let treeExpansionState = {};
 let leafNodeColors = {};
 let positions = {};
 
-let wiki = document.getElementsByClassName("analyse__wiki empty")[0];
-if (wiki) {
-  wiki.remove();
-}
-
 browser.storage.sync
-  .get(["positions", "treeExpansionState", "leafNodeColors"])
+  .get([
+    "positions",
+    "treeExpansionState",
+    "leafNodeColors",
+    "enablePositionSelector",
+  ])
   .then((storage) => {
+    if (!storage.enablePositionSelector) {
+      return;
+    }
     if (storage.treeExpansionState) {
       treeExpansionState = storage.treeExpansionState;
     }
@@ -19,6 +22,8 @@ browser.storage.sync
     if (storage.positions) {
       positions = storage.positions;
       refreshTree();
+    } else {
+      renderSelectorContainer();
     }
   });
 
@@ -71,6 +76,7 @@ function parseSelectorTree(selectorTree, path = []) {
 
 function createSelectorContainer() {
   const div = document.createElement("div");
+  div.id = "selectorContainer";
   div.style.marginTop = "20px";
   const buttonBar = document.createElement("div");
   const bigAddButton = addBigPlusButton();
@@ -153,7 +159,7 @@ function addDetailsRow(selectorTree, key, stateKey) {
   summary.appendChild(summaryContent);
 
   const addNodeIcon = addPlusButton(selectorTree[key], stateKey);
-  const addFenIcon = addAtButton(selectorTree[key]);
+  const addFenIcon = addAtButton(selectorTree[key], stateKey);
   const deleteIcon = addXButton(key, selectorTree);
 
   summary.appendChild(addNodeIcon);
@@ -256,7 +262,7 @@ function addPlusButton(currentNode, stateKey) {
   return addIcon;
 }
 
-function addAtButton(currentNode) {
+function addAtButton(currentNode, stateKey) {
   const addIcon = document.createElement("span");
   addIcon.textContent = "@";
   addIcon.style.cursor = "pointer";
@@ -264,7 +270,7 @@ function addAtButton(currentNode) {
   addIcon.addEventListener("click", (event) => {
     event.stopPropagation();
     event.preventDefault();
-    addFenLink(currentNode);
+    addFenLink(currentNode, stateKey);
     refreshTree();
   });
   return addIcon;
@@ -295,14 +301,27 @@ function addNewChild(parentNode) {
   }
 }
 
-function addFenLink(parentNode) {
+function addFenLink(parentNode, stateKey = "") {
   const newKey = prompt("Enter the name for this position:");
   if (newKey) {
     const fen = prompt("Enter the FEN for this position:");
     if (fen) {
       parentNode[newKey] = fen;
       browser.storage.sync.set({ positions: positions });
+      treeExpansionState[stateKey] = true;
     }
+  }
+}
+
+function renderSelectorContainer() {
+  const side = document.querySelector("aside");
+  if (side) {
+    while (side.children.length > 1) {
+      side.removeChild(side.lastChild);
+    }
+
+    const selectorDiv = createSelectorContainer();
+    side.appendChild(selectorDiv);
   }
 }
 

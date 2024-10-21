@@ -130,6 +130,7 @@ function initializeCheckboxes() {
       "sideAgnostic",
       "highlightMoves",
       "removeWiki",
+      "enablePositionSelector",
     ])
     .then(function (options) {
       checkboxes.forEach(function (checkbox) {
