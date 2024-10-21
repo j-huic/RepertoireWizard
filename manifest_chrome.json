@@ -1,18 +1,18 @@
 {
   "manifest_version": 3,
-  "name": "Repertoire Helper",
-  "version": "1.0",
+  "name": "Repertoire Wizard",
+  "version": "1.2",
   "description": "Brings together the best of Chessable and Lichess",
   "icons": {
-    "128": "assets/icon128.png",
-    "48": "assets/icon48.png",
-    "16": "assets/icon16.png"
+    "128": "assets/wizardpawn128.png",
+    "48": "assets/wizardpawn48.png",
+    "16": "assets/wizardpawn16.png"
   },
   "action": {
     "default_icon": {
-      "16": "assets/icon16.png",
-      "48": "assets/icon48.png",
-      "128": "assets/icon128.png"
+      "16": "assets/wizardpawn16.png",
+      "48": "assets/wizardpawn48.png",
+      "128": "assets/wizardpawn128.png"
     },
     "default_popup": "popup.html"
   },
@@ -21,11 +21,11 @@
     "service_worker": "background.js",
     "type": "module"
   },
-  "permissions": ["storage"],
+  "permissions": ["storage", "tabs"],
   "content_scripts": [
     {
       "matches": ["https://www.chessable.com/*"],
-      "js": ["libs/browser-polyfill.js", "global.js"]
+      "js": ["libs/browser-polyfill.js", "global.js", "scrape.js"]
     },
     {
       "matches": ["https://www.chessable.com/explore/*"],
@@ -39,6 +39,10 @@
     {
       "matches": ["https://lichess.org/*"],
       "js": ["libs/browser-polyfill.js", "moveHighlighting.js"]
+    },
+    {
+      "matches": ["https://lichess.org/analysis/*"],
+      "js": ["libs/browser-polyfill.js", "positionSelector.js"]
     }
   ]
 }
