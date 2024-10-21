@@ -24,19 +24,19 @@ browser.runtime.onMessage.addListener(async (request, sender) => {
     console.log(request.message);
   } else if (request.method === "saveChapterMoves") {
     parseChapterMoves(request.data);
-  } else if (request.method === "startScrape") {
+  } else if (request.method === "getCoursePageInfo") {
+    return { coursePage: await scrapeCoursePage(), scrapedChapters };
   } else if (request.method === "saveCourseData") {
     let { testDict } = await browser.storage.local.get("testDict");
     // console.log(bigDict);
-    await saveCourseData("kid", testDict);
-    buildCourseData();
+    mergeFenDictWithCourseData("kid", testDict);
   } else if (request.method === "test") {
     // let input = "https://www.chessable.com/course/91808/48/";
     console.log("test activated");
     let coursePage = await scrapeCoursePage();
     // let missingChapters = await getMissingChapters(coursePage);
 
-    await scrapeNMissingChapters(3, coursePage);
+    await scrapeNMissingChapters(coursePage, request.value);
     let bigDict = mergeDictList(allMoves);
     browser.storage.local.set({ testDict: bigDict });
     // console.log("starting merge");
@@ -47,9 +47,15 @@ browser.runtime.onMessage.addListener(async (request, sender) => {
   return Promise.resolve();
 });
 
-async function scrapeNMissingChapters(maxChapters, coursePage) {
+function sendProgressMessage(message) {
+  browser.runtime.sendMessage({ method: "updateProgress", message: message });
+}
+
+async function scrapeNMissingChapters(coursePage, maxChapters = 0) {
   let i = 0;
   let n = 0;
+  let chapterCount = coursePage.chapters.length;
+  if (maxChapters === 0) maxChapters = chapterCount;
 
   while (n < maxChapters) {
     if (i >= coursePage.length) break;
@@ -66,6 +72,11 @@ async function scrapeNMissingChapters(maxChapters, coursePage) {
     console.log(fenDict);
     allMoves.push(fenDict);
     scrapedChapters.push(chapter.url);
+    let message = `Chapters scraped: ${scrapedChapters.length}/${chapterCount}`;
+    sendProgressMessage(message);
+    if (scrapedChapters.length === chapterCount) {
+      mergeFenDictWithCourseData();
+    }
     i++;
     n++;
   }
@@ -73,10 +84,16 @@ async function scrapeNMissingChapters(maxChapters, coursePage) {
 
 async function scrapeCoursePage() {
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-  const response = await browser.tabs.sendMessage(tabs[0].id, {
-    method: "scrapeCoursePage",
-  });
-  return response;
+  const activeTab = tabs[0];
+
+  if (activeTab && activeTab.url.includes("chessable.com/course/")) {
+    const response = await browser.tabs.sendMessage(activeTab.id, {
+      method: "scrapeCoursePage",
+    });
+    return response;
+  } else {
+    return null;
+  }
 }
 
 async function getMovesFromChapter(url, delay = 1000) {
@@ -104,6 +121,18 @@ function waitForTabLoad(tabId) {
       }
     }
   });
+}
+
+// updates courseData in local storage with new fenDict
+async function mergeFenDictWithCourseData(courseTitle, fenDict) {
+  let { courseData = {} } = await browser.storage.local.get("courseData");
+  if (courseData.hasOwnProperty(courseTitle)) {
+    mergeDictsFaster(courseData[courseTitle], fenDict);
+  } else {
+    courseData[courseTitle] = fenDict;
+  }
+
+  await browser.storage.local.set({ courseData });
 }
 
 // saves individual fenDict to local storage

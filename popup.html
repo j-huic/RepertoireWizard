@@ -18,7 +18,7 @@
 
     <style>
       body {
-        width: 250px;
+        width: 400px;
       }
       .border-dark-grey {
         border-color: #2a2e33 !important;
@@ -40,6 +40,8 @@
       </button>
     </div>
 
+    <div class="border-top border-dark-grey my-3"></div>
+
     <!-- Collapse Section Right Below Header -->
     <div class="container">
       <div class="d-flex justify-content-center align-items-center w-100">
@@ -58,20 +60,36 @@
       <!-- Collapse Section with Darker Background -->
       <div class="collapse" id="scrapeInfoText">
         <div class="card bg-darker-card card-body">
-          Navigate to the starting page of the course you wish to scrape
+          Navigate to the starting page of the course you wish to scrape, and
+          press the scrape button below. For testing/robustness purposes, you
+          may choose to scrape fewer chapters at a time. Resume by pressing
+          again
         </div>
       </div>
     </div>
 
-    <div class="border-top border-dark-grey my-3"></div>
-
     <div class="container">
       <div class="d-flex flex-column align-items-center mt-3 mb-3">
+        <h6 id="titleHeader"></h6>
+        <h6>Number of chapters to scrape at a time:</h6>
+        <label for="rangeSlider" id="sliderLabel"></label>
+        <input
+          type="range"
+          class="form-range"
+          min="1"
+          max="11"
+          id="rangeSlider"
+        />
         <button id="testButton" class="btn btn-secondary mt-3 w-100">
-          Test
+          Start Scraping
         </button>
         <button id="saveButton" class="btn btn-success mt-3 w-100">Save</button>
       </div>
+    </div>
+
+    <div class="container">
+      <h6></h6>
+      <p id="progressText"></p>
     </div>
 
     <script src="libs/bootstrap.bundle.min.js"></script>
