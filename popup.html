@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <title>Popup</title>
@@ -11,56 +11,70 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css"
+    />
+
     <style>
-      @keyframes rainbow {
-        0% {
-          color: red;
-        }
-        14% {
-          color: orange;
-        }
-        28% {
-          color: yellow;
-        }
-        42% {
-          color: green;
-        }
-        57% {
-          color: blue;
-        }
-        71% {
-          color: indigo;
-        }
-        85% {
-          color: violet;
-        }
-        100% {
-          color: red;
-        }
+      body {
+        width: 250px;
       }
-      .rainbow-text {
-        animation: rainbow 3s infinite;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      .border-dark-grey {
+        border-color: #2a2e33 !important;
+        border-width: 2px !important;
+      }
+      /* Darker background for the expanded content to stand out */
+      .bg-darker-card {
+        background-color: #1f2327 !important; /* Darker shade */
+        color: white;
       }
     </style>
   </head>
-  <body
-    style="
-      background: url('assets/icon128.png') no-repeat center center;
-      background-size: cover;
-    "
-  >
+  <body class="bg-dark text-light">
+    <!-- Restored Settings Section with Cogwheel Button -->
     <div class="container text-center mt-3 pb-3">
-      <h1 class="h5 rainbow-text">Please Enjoy Repertoire Daddy</h1>
+      <h1 class="h5">Settings</h1>
       <button id="settingsButton" class="btn btn-primary mt-2">
         <i class="fas fa-cog"></i>
       </button>
     </div>
 
-    <br />
+    <!-- Collapse Section Right Below Header -->
+    <div class="container">
+      <div class="d-flex justify-content-center align-items-center w-100">
+        <h1 class="h6 mb-0">Course Move Scraping</h1>
+        <i
+          class="bi bi-info-circle ml-2"
+          id="scrapeInfoIcon"
+          style="cursor: pointer; font-size: 1.25rem"
+          data-bs-toggle="collapse"
+          data-bs-target="#scrapeInfoText"
+          aria-expanded="false"
+          aria-controls="scrapeInfoText"
+        ></i>
+      </div>
 
-    <button id="testButton">test</button>
+      <!-- Collapse Section with Darker Background -->
+      <div class="collapse" id="scrapeInfoText">
+        <div class="card bg-darker-card card-body">
+          Navigate to the starting page of the course you wish to scrape
+        </div>
+      </div>
+    </div>
 
+    <div class="border-top border-dark-grey my-3"></div>
+
+    <div class="container">
+      <div class="d-flex flex-column align-items-center mt-3 mb-3">
+        <button id="testButton" class="btn btn-secondary mt-3 w-100">
+          Test
+        </button>
+        <button id="saveButton" class="btn btn-success mt-3 w-100">Save</button>
+      </div>
+    </div>
+
+    <script src="libs/bootstrap.bundle.min.js"></script>
     <script src="libs/browser-polyfill.js"></script>
     <script src="popup.js"></script>
   </body>
