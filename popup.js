@@ -8,33 +8,25 @@ const saveButton = document.getElementById("saveButton");
 
 const slider = document.getElementById("rangeSlider");
 const sliderLabel = document.getElementById("sliderLabel");
+sliderLabel.textContent = "11";
 const labelString = "Number of chapters to scrape at a time: ";
 const progressText = document.getElementById("progressText");
+const moveProgress = document.getElementById("moveProgress");
 const titleHeader = document.getElementById("titleHeader");
+const scrapeControls = document.getElementById("scrapeControls");
 
 browser.runtime.sendMessage({ method: "getCoursePageInfo" }).then((info) => {
-  if (info.coursePage) {
-    let coursePage = info.coursePage;
-    titleHeader.textContent = "";
-    titleHeader.appendChild(document.createTextNode("Current Chapter:"));
-    titleHeader.appendChild(document.createElement("br"));
-    titleHeader.appendChild(document.createTextNode(coursePage.title));
-    progressText.textContent =
-      "Chapters Scraped: " +
-      info.scrapedChapters.length +
-      "/" +
-      coursePage.chapters.length;
-  }
+  consolePrint(info);
+  populateProgressInfo(info);
 });
 
 browser.storage.sync.get("sliderValue").then((storage) => {
   if (storage.sliderValue) {
     slider.value = storage.sliderValue;
   } else {
-    slider.value = 11;
+    slider.value = "11";
   }
-  sliderLabel.textContent =
-    storage.sliderValue === "11" ? "Max" : storage.sliderValue;
+  sliderLabel.textContent = slider.value === "11" ? "Max" : storage.sliderValue;
 });
 
 slider.addEventListener("input", () => {
@@ -44,24 +36,49 @@ slider.addEventListener("input", () => {
 });
 
 testButton.addEventListener("click", async () => {
-  consolePrint("test button clicked");
-
-  browser.runtime.sendMessage({ method: "test", value: slider.value });
-  // input = "https://www.chessable.com/course/91808/48/";
+  browser.runtime.sendMessage({ method: "startScrape", value: slider.value });
 });
-
 saveButton.addEventListener("click", () => {
   browser.runtime.sendMessage({ method: "saveCourseData" });
 });
 
 browser.runtime.onMessage.addListener((request) => {
-  if (request.method === "updateProgress") {
-    updateProgress(request.message);
+  if (request.method === "updateInfo") {
+    populateProgressInfo(request.metaData);
   }
 });
 
-function updateProgress(message) {
-  progressText.textContent = message;
+function populateProgressInfo(metaData) {
+  if (metaData) {
+    scrapeControls.style.display = "block";
+    titleHeader.textContent = "";
+    titleHeader.appendChild(document.createTextNode("Course Title:"));
+    titleHeader.appendChild(document.createElement("br"));
+    titleHeader.appendChild(document.createTextNode(metaData.title));
+    progressText.textContent =
+      "Chapters Scraped: " +
+      metaData.scrapedChapters.length +
+      "/" +
+      metaData.chapters.length;
+    moveProgress.textContent = "Lines Scraped: " + metaData.lineCount;
+
+    if (metaData.inMemory) {
+      console.log("in memory");
+      const checkmark = document.createElement("i");
+      checkmark.className = "bi bi-check-circle-fill text-success";
+      const messageText = document.createTextNode(
+        " Course is in local storage"
+      );
+
+      titleHeader.appendChild(document.createElement("br"));
+      titleHeader.appendChild(checkmark);
+      titleHeader.appendChild(messageText);
+    }
+  } else {
+    titleHeader.textContent =
+      "Navigate to a Chessable course page to display info";
+    scrapeControls.style.display = "none";
+  }
 }
 
 function consolePrint(message, origin = "") {

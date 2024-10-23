@@ -1,8 +1,9 @@
 import { Chess } from "./libs/chess.js";
 import "./libs/browser-polyfill.js";
 
-let scrapedChapters = [];
+let coursesMetaData = {};
 let allMoves = [];
+let abortController = new AbortController();
 
 browser.runtime.onMessage.addListener(async (request, sender) => {
   if (request.method === "getOptions") {
@@ -19,77 +20,150 @@ browser.runtime.onMessage.addListener(async (request, sender) => {
     return handleGetUCI(request.fen, request.move);
   } else if (request.method === "getSelectorTree") {
     handleGetSelectorTree();
+    ////////////////////////////////
   } else if (request.method === "print") {
     console.log("from " + request.origin + " :");
     console.log(request.message);
-  } else if (request.method === "saveChapterMoves") {
-    parseChapterMoves(request.data);
   } else if (request.method === "getCoursePageInfo") {
-    return { coursePage: await scrapeCoursePage(), scrapedChapters };
+    return await getMetaData();
+  } else if (request.method === "abort") {
+    abortController.abort();
+    return;
   } else if (request.method === "saveCourseData") {
-    let { testDict } = await browser.storage.local.get("testDict");
-    // console.log(bigDict);
-    mergeFenDictWithCourseData("kid", testDict);
-  } else if (request.method === "test") {
-    // let input = "https://www.chessable.com/course/91808/48/";
-    console.log("test activated");
+    let id = await getCurrentCourseID();
+    let metaData = coursesMetaData[id];
+    console.log(coursesMetaData[id]);
+    let bigDict = mergeDictList(metaData.allMoves);
+    mergeFenDictWithCourseData(metaData.title, id, bigDict);
+  } else if (request.method === "startScrape") {
     let coursePage = await scrapeCoursePage();
-    // let missingChapters = await getMissingChapters(coursePage);
+    abortController = new AbortController();
 
-    await scrapeNMissingChapters(coursePage, request.value);
-    let bigDict = mergeDictList(allMoves);
-    browser.storage.local.set({ testDict: bigDict });
-    // console.log("starting merge");
-    // let bigDict = mergeDictList(allMoves);
-    // console.log("finished merge");
-    // console.log(Object.keys(bigDict).length);
+    await scrapeNMissingChapters(
+      coursePage,
+      parseInt(request.value),
+      abortController.signal
+    );
   }
   return Promise.resolve();
 });
 
-function sendProgressMessage(message) {
-  browser.runtime.sendMessage({ method: "updateProgress", message: message });
+function sendProgressMessage(message, replace = true) {
+  try {
+    browser.runtime.sendMessage({
+      method: "updateProgress",
+      message: message,
+      replace: replace,
+    });
+  } catch {}
 }
 
-async function scrapeNMissingChapters(coursePage, maxChapters = 0) {
+async function getMetaData() {
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  const activeTab = tabs[0];
+
+  if (activeTab.url.includes("chessable.com/course/")) {
+    let courseID = activeTab.url.split("course/")[1];
+    courseID = courseID.replace(/\/$/, "");
+    if (isNaN(courseID)) {
+      return null;
+    }
+
+    if (coursesMetaData.hasOwnProperty(courseID)) {
+      return coursesMetaData[courseID];
+    } else {
+      let coursePage = await scrapeCoursePage();
+      coursesMetaData[courseID] = {
+        title: coursePage.title,
+        chapters: coursePage.chapters,
+        scrapedChapters: [],
+        allMoves: [],
+        lineCount: 0,
+        inMemory: await existsInCourseData(coursePage.title),
+      };
+      return coursesMetaData[courseID];
+    }
+  } else {
+    return null;
+  }
+}
+
+async function existsInCourseData(courseTitle) {
+  let { courseData = {} } = await browser.storage.local.get("courseData");
+  return courseData.hasOwnProperty(courseTitle);
+}
+
+async function getCurrentCourseID() {
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  const activeTab = tabs[0];
+  let courseID = validateCourseURL(activeTab.url);
+  return courseID;
+}
+
+async function scrapeNMissingChapters(coursePage, maxChapters = 0, signal) {
   let i = 0;
   let n = 0;
   let chapterCount = coursePage.chapters.length;
-  if (maxChapters === 0) maxChapters = chapterCount;
+  let metaData = coursesMetaData[coursePage.id];
+
+  if (maxChapters === 0) {
+    maxChapters = chapterCount;
+  } else if (maxChapters === 11) {
+    maxChapters = chapterCount;
+  }
 
   while (n < maxChapters) {
-    if (i >= coursePage.length) break;
+    if (i >= chapterCount) break;
+
+    if (signal.aborted) {
+      sendProgressMessage("scraping aborted", false);
+      break;
+    }
 
     let chapter = coursePage.chapters[i];
-    if (scrapedChapters.includes(chapter.url)) {
+    if (metaData.scrapedChapters.includes(chapter.url)) {
       i++;
       continue;
     }
 
     let moves = await getMovesFromChapter(chapter.url);
     let fenDict = pgnListToFenDict(moves);
+    metaData.allMoves.push(fenDict);
+    metaData.lineCount += moves.length;
+    metaData.scrapedChapters.push(chapter.url);
+    updatePopupInfo();
+
     console.log("scraped " + chapter.title);
-    console.log(fenDict);
-    allMoves.push(fenDict);
-    scrapedChapters.push(chapter.url);
-    let message = `Chapters scraped: ${scrapedChapters.length}/${chapterCount}`;
-    sendProgressMessage(message);
-    if (scrapedChapters.length === chapterCount) {
-      mergeFenDictWithCourseData();
-    }
+    console.log("chapters scraped: " + metaData.scrapedChapters.length);
+    console.log("total: " + chapterCount);
+    // if (metaData.scrapedChapters.length === chapterCount) {
+    //   console.log("saving");
+    //   let bigDict = mergeDictList(allMoves);
+    //   mergeFenDictWithCourseData(coursePage.title, coursePage.id, bigDict);
+    // }
     i++;
     n++;
   }
 }
 
+async function updatePopupInfo() {
+  let courseID = await getCurrentCourseID();
+  let metaData = coursesMetaData[courseID];
+  try {
+    browser.runtime.sendMessage({ method: "updateInfo", metaData });
+  } catch {}
+}
+
 async function scrapeCoursePage() {
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
   const activeTab = tabs[0];
+  let courseID = validateCourseURL(activeTab.url);
 
-  if (activeTab && activeTab.url.includes("chessable.com/course/")) {
+  if (activeTab && courseID) {
     const response = await browser.tabs.sendMessage(activeTab.id, {
       method: "scrapeCoursePage",
     });
+    response.id = courseID;
     return response;
   } else {
     return null;
@@ -124,7 +198,13 @@ function waitForTabLoad(tabId) {
 }
 
 // updates courseData in local storage with new fenDict
-async function mergeFenDictWithCourseData(courseTitle, fenDict) {
+async function mergeFenDictWithCourseData(courseTitle, courseID, fenDict) {
+  console.log(
+    `merging ${courseTitle} data with ${Object.keys(fenDict).length} keys`
+  );
+  let memUsage = await browser.storage.local.getBytesInUse();
+  console.log(memUsage);
+
   let { courseData = {} } = await browser.storage.local.get("courseData");
   if (courseData.hasOwnProperty(courseTitle)) {
     mergeDictsFaster(courseData[courseTitle], fenDict);
@@ -132,7 +212,39 @@ async function mergeFenDictWithCourseData(courseTitle, fenDict) {
     courseData[courseTitle] = fenDict;
   }
 
-  await browser.storage.local.set({ courseData });
+  try {
+    await browser.storage.local.set({ courseData });
+    let { courseDataInfo = {} } = await browser.storage.local.get(
+      "courseDataInfo"
+    );
+    courseDataInfo[courseTitle] = false;
+    courseDataInfo[courseTitle + "Include"] = true;
+    await browser.storage.sync.set({ courseDataInfo });
+    console.log(courseID);
+    console.log(coursesMetaData[courseID]);
+    coursesMetaData[courseID].inMemory = true;
+    updatePopupInfo();
+  } catch (error) {
+    console.error(`Error merging ${courseTitle} with courseData: `, error);
+  }
+}
+
+// returns courseID if the URL is a course page, otherwise returns false
+function validateCourseURL(url) {
+  try {
+    if (url.includes("chessable.com/course/")) {
+      let courseID = url.split("chessable.com/course/")[1];
+      courseID = courseID.replace(/\/$/, "");
+      if (!isNaN(courseID)) {
+        return courseID;
+      }
+    }
+  } catch {
+    console.error("error in validate url");
+    return false;
+  }
+
+  return false;
 }
 
 // saves individual fenDict to local storage
@@ -172,65 +284,6 @@ async function buildCourseData() {
     }
     browser.storage.local.set({ courseData });
     console.log(courseData);
-  }
-}
-
-class ScrapingPipeline {
-  constructor(maxConcurrentTabs = 5) {
-    this.maxConcurrentTabs = maxConcurrentTabs;
-    this.activeTabs = 0;
-    this.queue = [];
-    this.scrapedData = new Map();
-  }
-
-  async addToQueue(url, parentCourse, chapterTitle) {
-    return new Promise((resolve, reject) => {
-      this.queue.push({ url, parentCourse, chapterTitle, resolve, reject });
-      this.processQueue();
-    });
-  }
-
-  async processQueue() {
-    if (this.activeTabs >= this.maxConcurrentTabs || this.queue.length === 0) {
-      return;
-    }
-
-    const { url, parentCourse, chapterTitle, resolve, reject } =
-      this.queue.shift();
-    this.activeTabs++;
-
-    try {
-      const data = await getMovesFromChapter(url);
-      this.scrapedData.set(`${parentCourse}_${chapterTitle}`, data);
-      resolve(data);
-    } catch (error) {
-      console.error(`Error processing ${url}:`, error);
-      reject(error);
-    } finally {
-      this.activeTabs--;
-      this.processQueue;
-    }
-  }
-
-  async mergeAndSaveData() {
-    let mergedData = {};
-    let courseIndex = {};
-
-    for (const [key, value] of this.scrapedData.entries()) {
-      const [parentCourse, chapterTitle] = key.split("_");
-      mergedData[key] = pgnListToFenDict(value);
-
-      if (courseIndex.hasOwnProperty(parentCourse)) {
-        courseIndex[parentCourse].push(chapterTitle);
-      } else {
-        courseIndex[parentCourse] = [chapterTitle];
-      }
-    }
-    await browser.storage.local.set(mergedData);
-    await browser.storage.local.set({ courseIndex: courseIndex });
-    console.log("data merged and saved");
-
-    return { mergedData, courseIndex };
   }
 }
 
