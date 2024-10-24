@@ -3,22 +3,29 @@ cogwheel.addEventListener("click", () => {
   browser.runtime.openOptionsPage();
 });
 
-const testButton = document.getElementById("testButton");
+const startButton = document.getElementById("startButton");
 const saveButton = document.getElementById("saveButton");
+const abortButton = document.getElementById("abortButton");
 
 const slider = document.getElementById("rangeSlider");
 const sliderLabel = document.getElementById("sliderLabel");
 sliderLabel.textContent = "11";
 const labelString = "Number of chapters to scrape at a time: ";
-const progressText = document.getElementById("progressText");
-const moveProgress = document.getElementById("moveProgress");
+
 const titleHeader = document.getElementById("titleHeader");
-const scrapeControls = document.getElementById("scrapeControls");
 const titleContainer = document.getElementById("courseTitle");
 const courseInStorage = document.getElementById("courseInStorage");
 
+const scrapeControls = document.getElementById("scrapeControls");
+const progressText = document.getElementById("progressText");
+const moveProgress = document.getElementById("moveProgress");
+const statusUpdate = document.getElementById("statusUpdate");
+let intervalID;
+
 browser.runtime.sendMessage({ method: "getCoursePageInfo" }).then((info) => {
-  populateProgressInfo(info);
+  try {
+    populateProgressInfo(info);
+  } catch {}
 });
 
 browser.storage.sync.get("sliderValue").then((storage) => {
@@ -36,18 +43,48 @@ slider.addEventListener("input", () => {
   browser.storage.sync.set({ sliderValue });
 });
 
-testButton.addEventListener("click", async () => {
+startButton.addEventListener("click", async () => {
   browser.runtime.sendMessage({ method: "startScrape", value: slider.value });
 });
 saveButton.addEventListener("click", () => {
   browser.runtime.sendMessage({ method: "saveCourseData" });
 });
+abortButton.addEventListener("click", () => {
+  browser.runtime.sendMessage({ method: "abort" });
+});
 
 browser.runtime.onMessage.addListener((request) => {
   if (request.method === "updateInfo") {
     populateProgressInfo(request.metaData);
+  } else if (request.method === "updateStatus") {
+    if (request.info === "ongoing") {
+      dotsMessage(statusUpdate, "Scrape is Ongoing");
+    } else if (request.info === "aborted") {
+      clearInterval(intervalID);
+      statusUpdate.textContent = "Scraping Aborted";
+    } else if (request.info === "complete") {
+      clearInterval(intervalID);
+      statusUpdate.textContent = "Scraping Complete";
+    } else if (request.info === "partial") {
+      clearInterval(intervalID);
+      statusUpdate.textContent = "Partial Scraping Complete";
+    }
   }
 });
+
+function dotsMessage(element, message) {
+  let dots = ".";
+
+  element.textContent = message + dots;
+  intervalID = setInterval(() => {
+    dots = cycleDots(dots);
+    element.textContent = message + dots;
+  }, 500);
+}
+
+function cycleDots(dots) {
+  return ".".repeat((dots.length % 3) + 1);
+}
 
 function populateProgressInfo(metaData) {
   if (metaData) {
