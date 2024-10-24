@@ -1,98 +1,87 @@
-var callback = function (mutationsList, observer) {
+var observer = new MutationObserver(callback);
+observer.observe(document, { childList: true, subtree: true });
+
+function callback(mutationsList, observer) {
   for (let mutation of mutationsList) {
     if (mutation.addedNodes.length) {
       var iframe = document.querySelector("iframe");
       if (iframe) {
         var dropdown =
           iframe.contentDocument.getElementById("repertoireSelector");
-        if (dropdown) {
-          var items = dropdown.children;
-          var itemslength = items.length;
+        if (dropdown && !dropdown.dataset.processed) {
+          dropdown.dataset.processed = "true";
 
           browser.runtime
-            .sendMessage({ method: "getBlacklist" })
+            .sendMessage({ method: "getDropdownOptions" })
             .then((response) => {
-              console.log("blacklist", response);
-              if (response.blacklist) {
-                var blacklistlength = response.blacklist.length;
-
-                for (var i = itemslength - 1; i >= 0; i--) {
-                  for (let j = 0; j < blacklistlength; j++) {
-                    if (
-                      items[i].innerText
-                        .toLowerCase()
-                        .includes(response.blacklist[j].toLowerCase())
-                    ) {
-                      dropdown.remove(i);
-                      break;
-                    }
-                  }
-                }
+              observer.disconnect();
+              if (response.blacklist && response.filterToggle) {
+                filterDropdown(dropdown, response.blacklist);
+              }
+              if (response.categories && response.categoriesToggle) {
+                categoriseDropdown(dropdown, response.categories);
+              }
+              if (response.rename) {
+                rename(dropdown, response.rename);
               }
             });
-
-          browser.runtime
-            .sendMessage({ method: "getCategories" })
-            .then((response) => {
-              console.log("categories", response);
-              var categories = Object.keys(response.categories);
-
-              for (var k = 0; k < categories.length; k++) {
-                var optgroup = document.createElement("optgroup");
-                optgroup.label = categories[k];
-                whitelist = response.categories[categories[k]];
-                dropdown.appendChild(optgroup);
-                for (var i = items.length - 1; i >= 0; i--) {
-                  for (
-                    let j = 0;
-                    j < response.categories[categories[k]].length;
-                    j++
-                  ) {
-                    if (
-                      items[i].innerText
-                        .toLowerCase()
-                        .includes(
-                          response.categories[categories[k]][j].toLowerCase()
-                        )
-                    ) {
-                      optgroup.appendChild(items[i]);
-                      break;
-                    }
-                  }
-                }
-              }
-
-              rename();
-            });
-
-          observer.disconnect();
         }
       }
     }
   }
-};
+}
 
-var observer = new MutationObserver(callback);
-observer.observe(document, { childList: true, subtree: true });
+function filterDropdown(dropdown, blacklist) {
+  let items = dropdown.children;
 
-function rename() {
-  browser.runtime.sendMessage({ method: "getOptions" }).then((response) => {
-    let rename = response.rename;
-    let renameKeys = Object.keys(rename);
+  for (var i = items.length - 1; i >= 0; i--) {
+    for (let j = 0; j < blacklist.length; j++) {
+      if (
+        items[i].innerText.toLowerCase().includes(blacklist[j].toLowerCase())
+      ) {
+        dropdown.remove(i);
+        break;
+      }
+    }
+  }
+}
 
-    var iframe = document.querySelector("iframe");
-    let dropdown2 = iframe.contentDocument.getElementById("repertoireSelector");
-    let items = dropdown2.querySelectorAll("option");
+function categoriseDropdown(dropdown, categories) {
+  let items = dropdown.children;
+  var categoryList = Object.keys(categories);
 
-    for (let i = 0; i < items.length; i++) {
-      for (let j = 0; j < renameKeys.length; j++) {
+  for (var k = 0; k < categoryList.length; k++) {
+    var optgroup = document.createElement("optgroup");
+    optgroup.label = categoryList[k];
+    whitelist = categories[categoryList[k]];
+    dropdown.appendChild(optgroup);
+    for (var i = items.length - 1; i >= 0; i--) {
+      for (let j = 0; j < categories[categoryList[k]].length; j++) {
         if (
-          items[i].innerText.toLowerCase().includes(renameKeys[j].toLowerCase())
+          items[i].innerText
+            .toLowerCase()
+            .includes(categories[categoryList[k]][j].toLowerCase())
         ) {
-          items[i].innerText = rename[renameKeys[j]];
+          optgroup.appendChild(items[i]);
           break;
         }
       }
     }
-  });
+  }
+}
+
+function rename(dropdown, rename) {
+  let renameKeys = Object.keys(rename);
+  let items = dropdown.querySelectorAll("option");
+
+  for (let i = 0; i < items.length; i++) {
+    for (let j = 0; j < renameKeys.length; j++) {
+      if (
+        items[i].innerText.toLowerCase().includes(renameKeys[j].toLowerCase())
+      ) {
+        items[i].innerText = rename[renameKeys[j]];
+        break;
+      }
+    }
+  }
 }
