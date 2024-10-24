@@ -2,10 +2,6 @@ function getMovesFromChapter() {
   const moveCards = document.getElementsByClassName("variation-card__moves");
   const pgnList = Array.from(moveCards).map((card) => card.textContent);
 
-  // const chapterName = document
-  //   .getElementsByClassName("courseUI-bookChapter")[0]
-  //   .textContent.split("Chapters")[1];
-
   return pgnList;
 }
 
@@ -30,6 +26,7 @@ async function fetchChapter(url) {
   const text = await response.text();
   const parser = new DOMParser();
   const document = parser.parseFromString(text, "text/html");
+
   return document;
 }
 
@@ -39,9 +36,7 @@ browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     sendResponse(urls);
     return true;
   } else if (request.method === "getMoves") {
-    // getMovesFromChapter().then(sendResponse);
     sendResponse(getMovesFromChapter());
-    // return true;
   }
 });
 

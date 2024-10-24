@@ -14,9 +14,10 @@ const progressText = document.getElementById("progressText");
 const moveProgress = document.getElementById("moveProgress");
 const titleHeader = document.getElementById("titleHeader");
 const scrapeControls = document.getElementById("scrapeControls");
+const titleContainer = document.getElementById("courseTitle");
+const courseInStorage = document.getElementById("courseInStorage");
 
 browser.runtime.sendMessage({ method: "getCoursePageInfo" }).then((info) => {
-  consolePrint(info);
   populateProgressInfo(info);
 });
 
@@ -53,8 +54,7 @@ function populateProgressInfo(metaData) {
     scrapeControls.style.display = "block";
     titleHeader.textContent = "";
     titleHeader.appendChild(document.createTextNode("Course Title:"));
-    titleHeader.appendChild(document.createElement("br"));
-    titleHeader.appendChild(document.createTextNode(metaData.title));
+    titleContainer.textContent = metaData.title;
     progressText.textContent =
       "Chapters Scraped: " +
       metaData.scrapedChapters.length +
@@ -62,21 +62,14 @@ function populateProgressInfo(metaData) {
       metaData.chapters.length;
     moveProgress.textContent = "Lines Scraped: " + metaData.lineCount;
 
-    if (metaData.inMemory) {
-      console.log("in memory");
-      const checkmark = document.createElement("i");
-      checkmark.className = "bi bi-check-circle-fill text-success";
-      const messageText = document.createTextNode(
-        " Course is in local storage"
-      );
-
-      titleHeader.appendChild(document.createElement("br"));
-      titleHeader.appendChild(checkmark);
-      titleHeader.appendChild(messageText);
+    if (metaData.inMemory === true) {
+      courseInStorage.style.display = "block";
+    } else {
+      courseInStorage.style.display = "none";
     }
   } else {
     titleHeader.textContent =
-      "Navigate to a Chessable course page to display info";
+      "Navigate to a Chessable course page to display info and controls";
     scrapeControls.style.display = "none";
   }
 }

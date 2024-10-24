@@ -71,19 +71,29 @@
           may choose to scrape fewer chapters at a time (resume the process by pressing again, or abort if necessary). <br> <br>
           The extension will open and close the course chapters in an inactive tab one by one. This is necessary in order to scrape the line PGNs; the process may take a minute or two depending on the size of the course. Remain on the course page with the current window open for best results. 
           <br> <br>
-          Once the number of chapters and lines scraped in the below section matches the complete course, press the Save button, after which the course should appear in the settings and be ready for the move highlighting. 
+          Once the number of chapters and lines scraped in the below section matches the complete course, press the Save button, after which the course should appear in the settings and be ready for the move highlighting (don't forget to toggle the relevant checkbox in the settings). 
         </div>
       </div>
     </div>
     <div class="border-top border-dark-grey my-2"></div>
 
-    <div id="courseInfoContainer">
-      <h6 id="titleHeader" style="text-align: center"></h6>
+    <div class="container" id="courseInfoContainer">
+      <h6 id="titleHeader" style="text-align: left"></h6>
+      <h6 id="courseTitle" class="mb-3"></h6>
+      <div
+        id="courseInStorage"
+        class="alert alert-success align-items-center mt-2"
+        role="alert"
+        style="padding: 0.25rem 0.5rem; display: none"
+      >
+        <i class="bi bi-check-circle-fill" style="margin-right: 0.5rem"></i>
+        <span class="small-text"> Course data in storage</span>
+      </div>
     </div>
 
     <div class="container" id="scrapeControls">
-      <div class="d-flex flex-column align-items-center mt-3 mb-3">
-        <h6>Number of chapters to scrape at a time:</h6>
+      <div class="d-flex flex-column align-items-center mt-2 mb-2">
+        <h6>Number of chapters to scrape in one go:</h6>
         <label for="rangeSlider" id="sliderLabel"></label>
         <input
           type="range"
@@ -93,15 +103,27 @@
           id="rangeSlider"
           style="cursor: pointer"
         />
-        <button id="testButton" class="btn btn-secondary mt-3 w-100">
+        <button id="testButton" class="btn btn-secondary mt-2 w-100">
           Start Scraping
         </button>
-        <button id="saveButton" class="btn btn-success mt-3 w-100">Save</button>
-        <button id="abortButton" class="btn btn-danger mt-3 w-100">
-          Abort
-        </button>
+        <div class="d-flex justify-content-between mt-2 w-100">
+          <button
+            id="saveButton"
+            class="btn btn-success w-50 me-3"
+            style="margin-right: 2.5px"
+          >
+            Save
+          </button>
+          <button
+            id="abortButton"
+            class="btn btn-danger w-50 ms-3"
+            style="margin-left: 2.5px"
+          >
+            Abort
+          </button>
+        </div>
       </div>
-      <div class="container">
+      <div>
         <p id="progressText"></p>
         <p id="moveProgress"></p>
       </div>
