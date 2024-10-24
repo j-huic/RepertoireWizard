@@ -41,9 +41,21 @@ document.addEventListener("DOMContentLoaded", function () {
     // implements clear buttons
     const clearButton = document.getElementById(item + "Clear");
     clearButton.addEventListener("click", () => {
-      inputField.value = "";
-      inputField.style.height = "auto";
-      browser.storage.sync.remove(item);
+      console.log(item);
+      if (item === "data") {
+        const confirmation = confirm(
+          "Are you sure you want to delete all course data?"
+        );
+        if (confirmation) {
+          browser.storage.local.remove("courseData");
+          let container = document.getElementById("courseOptionsContainer");
+          emptyContainer(container);
+        }
+      } else {
+        inputField.value = "";
+        inputField.style.height = "auto";
+        browser.storage.sync.remove(item);
+      }
     });
 
     // implements info icons/text
@@ -60,17 +72,23 @@ document.addEventListener("DOMContentLoaded", function () {
     .then(function (storage) {
       if (storage.courseData) {
         displayCourseDataOptions(Object.keys(storage.courseData).sort());
-        const fileStatusMessage = document.getElementById("fileStatusMessage");
-        fileStatusMessage.textContent =
-          "Course data file already exists: " +
-          storage.courseDataFilename +
-          " (uploaded on   " +
-          storage.courseDataTimestamp +
-          ")";
+        // const fileStatusMessage = document.getElementById("fileStatusMessage");
+        // fileStatusMessage.textContent =
+        //   "Course data file already exists: " +
+        //   storage.courseDataFilename +
+        //   " (uploaded on   " +
+        //   storage.courseDataTimestamp +
+        //   ")";
       }
     });
 });
 // functions
+
+function emptyContainer(element) {
+  while (element.firstChild) {
+    element.removeChild(element.firstChild);
+  }
+}
 
 function submitBlacklist() {
   const blacklistInput = document.getElementById("blacklistInput");

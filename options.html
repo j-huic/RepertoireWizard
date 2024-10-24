@@ -18,9 +18,10 @@
 
     <br />
 
+    <h5>Chessable</h5>
     <div>
       <input type="checkbox" id="removeNotifs" name="checkbox" />
-      <label for="removeNotifs">Hide Notification Alert</label>
+      <label for="removeNotifs">Hide Chessable Notification Alert</label>
     </div>
     <div>
       <input type="checkbox" id="filterToggle" name="checkbox" />
@@ -30,24 +31,27 @@
       <input type="checkbox" id="categoriesToggle" name="checkbox" />
       <label for="categoriesToggle">Toggle Categorisation</label>
     </div>
+    <br />
+    <h5>Lichess</h5>
+    <div>
+      <input type="checkbox" id="highlightMoves" name="checkbox" />
+      <label for="highlightMoves"
+        >Highlight Recommendations in the Move Tray</label
+      >
+    </div>
     <div>
       <input type="checkbox" id="sideAgnostic" name="checkbox" />
       <label for="sideAgnostic">Side Agnostic Move Recommendations</label>
     </div>
-    <div>
-      <input type="checkbox" id="highlightMoves" name="checkbox" />
-      <label for="highlightMoves"
-        >Highlight Recommendations in the Lichess Move Tray</label
-      >
-    </div>
+
     <div>
       <input type="checkbox" id="removeWiki" name="checkbox" />
-      <label for="removeWiki">Remove Wiki Sidebar from Lichess</label>
+      <label for="removeWiki">Remove Wiki from Sidebar</label>
     </div>
     <div>
       <input type="checkbox" id="enablePositionSelector" name="checkbox" />
       <label for="enablePositionSelector"
-        >Enable the Position Selector in Lichess Analysis Sidebar</label
+        >Enable the Position Selector in Analysis Sidebar</label
       >
     </div>
 
@@ -79,7 +83,7 @@
         Clear Blacklist
       </button>
       <!-- prettier-ignore -->
-      <div id="blacklistInfoText" style="display: none">Add blacklisted keywords to filter out unwanted courses (separate with commas; not case sensitive).
+      <div id="blacklistInfoText" style="display: none">Add blacklisted keywords to filter out unwanted courses. E.g. "short" will filter out Short & Sweet courses (separate with commas; not case sensitive).
       </div>
     </div>
 
@@ -148,7 +152,7 @@ E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
         Clear Rename
       </button>
       <!-- prettier-ignore -->
-      <div id="renameInfoText" style="display: none; white-space: normal">Rename courses by adding a dictionary with original course name as key and new name as value. E.g. {"Lifetime Repertoires: Sam Shankland's d4 - Part 1": "Shanland d4 - QGA/Slav"} (not case sensitive)
+      <div id="renameInfoText" style="display: none; white-space: normal">Rename courses by adding a dictionary with original course name as key and new name as value. E.g. {"Lifetime Repertoires: Sam Shankland's d4 - Part 1": "Shankland d4 - QGA/Slav"} (not case sensitive)
       </div>
     </div>
 
@@ -198,11 +202,11 @@ E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
         style="cursor: pointer; font-size: 1.15rem"
       ></i>
       <!-- prettier-ignore -->
-      <div id="dataInfoText" style="display: none">Upload a .json file where each key is a course name, and where each value is an object in itself with FEN strings as keys and a list of move strings as values.
+      <div id="dataInfoText" style="display: none">Alternatively to scraping with the extension, you may upload your own .json file where each key is a course name, and where each value is an object in itself with FEN strings as keys and a list of move strings as values.
 E.g. {"d4": {"fenstring" : ["Nf6", "d5", "c5", "f5"]}}
 Important: FEN strings must be cut off after the "-" in order to recognize transpositions.
       </div>
-      <div id="fileStatusMessage" class="mt-2"></div>
+      <!-- <div id="fileStatusMessage" class="mt-2"></div> -->
       <input type="file" id="dataInput" class="form-control" accept=".json" />
       <button id="dataSubmit" class="btn btn-primary mt-2">Upload</button>
       <button
