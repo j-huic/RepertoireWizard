@@ -30,18 +30,18 @@
     "open_in_tab": true
   },
   "background": {
-    "scripts": ["libs/browser-polyfill.js", "background.js"],
+    "scripts": ["background.js"],
     "type": "module"
   },
   "permissions": ["storage", "tabs"],
   "content_scripts": [
     {
       "matches": ["*://www.chessable.com/*"],
-      "js": ["libs/browser-polyfill.js", "global.js", "scrape.js"]
+      "js": ["global.js", "scrape.js"]
     },
     {
       "matches": ["*://www.chessable.com/explore/*"],
-      "js": ["libs/browser-polyfill.js", "dropdownFilter.js"]
+      "js": ["dropdownFilter.js"]
     },
     {
       "matches": ["*://www.chessable.com/analysis/*"],
@@ -50,11 +50,11 @@
     },
     {
       "matches": ["*://lichess.org/*"],
-      "js": ["libs/browser-polyfill.js", "moveHighlighting.js"]
+      "js": ["moveHighlighting.js"]
     },
     {
       "matches": ["*://lichess.org/analysis/*"],
-      "js": ["libs/browser-polyfill.js", "positionSelector.js"]
+      "js": ["positionSelector.js"]
     }
   ]
 }

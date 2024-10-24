@@ -17,7 +17,7 @@ browser.runtime.sendMessage({ method: "getOptions" }).then((response) => {
         if (document.readyState === "complete") {
           setTimeout(() => {
             highlightExplorerMoves();
-          }, 100);
+          }, 500);
         }
       }
     });
