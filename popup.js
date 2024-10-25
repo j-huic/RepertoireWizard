@@ -1,6 +1,26 @@
 const cogwheel = document.getElementById("settingsButton");
+const htmlElement = document.documentElement;
+let theme;
+
 cogwheel.addEventListener("click", () => {
   browser.runtime.openOptionsPage();
+});
+
+const lightSwitch = document.getElementById("lightSwitch");
+const lightSlider = document.getElementById("lightSlider");
+const body = document.getElementById("body");
+
+browser.storage.sync.get("theme").then((storage) => {
+  if (storage.theme) {
+    theme = "light";
+    lightSlider.style.transition = "none";
+    lightSwitch.checked = storage.theme;
+    lightSlider.offsetHeight;
+    lightSlider.style.transition = "";
+    htmlElement.setAttribute("data-bs-theme", theme);
+  } else {
+    theme = "dark";
+  }
 });
 
 const startButton = document.getElementById("startButton");
@@ -26,6 +46,13 @@ browser.runtime.sendMessage({ method: "getCoursePageInfo" }).then((info) => {
   try {
     populateProgressInfo(info);
   } catch {}
+});
+
+lightSwitch.addEventListener("change", () => {
+  theme = lightSwitch.checked ? "light" : "dark";
+  htmlElement.setAttribute("data-bs-theme", theme);
+  browser.runtime.sendMessage({ method: "theme", theme: theme });
+  browser.storage.sync.set({ theme: lightSwitch.checked });
 });
 
 browser.storage.sync.get("sliderValue").then((storage) => {

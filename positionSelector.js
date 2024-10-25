@@ -1,6 +1,7 @@
 let treeExpansionState = {};
 let leafNodeColors = {};
 let positions = {};
+let theme = "dark";
 
 browser.storage.sync
   .get([
@@ -8,8 +9,12 @@ browser.storage.sync
     "treeExpansionState",
     "leafNodeColors",
     "enablePositionSelector",
+    "theme",
   ])
   .then((storage) => {
+    if (storage.theme) {
+      theme = "light";
+    }
     if (!storage.enablePositionSelector) {
       return;
     }
@@ -125,7 +130,11 @@ function addLeafNodeListItem(key, selectorTree, nodeKey) {
 
   const fenLink = document.createElement("span");
   fenLink.textContent = key;
-  fenLink.style.color = "#ADD8E6";
+  if (theme === "light") {
+    fenLink.style.color = "#007BFF";
+  } else {
+    fenLink.style.color = "#ADD8E6";
+  }
   fenLink.style.textDecoration = "underline";
   fenLink.style.cursor = "pointer";
 
@@ -182,6 +191,13 @@ function addBigInfoButton() {
   infoButton.style.marginLeft = "10px";
   infoButton.style.width = "25px";
   infoButton.style.height = "25px";
+  if (theme === "light") {
+    infoButton.style.color = "black";
+    infoButton.style.backgroundColor = "#b8b8b8";
+    infoButton.style.border = "none";
+    infoButton.style.boxShadow = "none";
+    infoButton.style.outline = "none";
+  }
   infoButton.addEventListener("click", () => {
     alert(
       `+ button adds a new category node\n@ button adds a new FEN link\nx button removes the node or link`
@@ -196,6 +212,13 @@ function addBigPlusButton() {
   addButton.style.marginBottom = "10px";
   addButton.style.width = "25px";
   addButton.style.height = "25px";
+  if (theme === "light") {
+    addButton.style.color = "black";
+    addButton.style.backgroundColor = "#b8b8b8";
+    addButton.style.border = "none";
+    addButton.style.boxShadow = "none";
+    addButton.style.outline = "none";
+  }
   addButton.addEventListener("click", () => {
     addNewChild(positions);
     refreshTree();
@@ -210,6 +233,13 @@ function addBigAtButton() {
   button.style.marginLeft = "10px";
   button.style.width = "25px";
   button.style.height = "25px";
+  if (theme === "light") {
+    button.style.color = "black";
+    button.style.backgroundColor = "#b8b8b8";
+    button.style.border = "none";
+    button.style.boxShadow = "none";
+    button.style.outline = "none";
+  }
   button.addEventListener("click", () => {
     addFenLink(positions);
     refreshTree();

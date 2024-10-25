@@ -1,6 +1,23 @@
+let theme;
+
 document.addEventListener("DOMContentLoaded", function () {
+  const htmlElement = document.documentElement;
   const inputVars = ["blacklist", "categories", "rename", "positions", "data"];
 
+  browser.storage.sync.get("theme").then((storage) => {
+    if (storage.theme) {
+      theme = "light";
+      htmlElement.setAttribute("data-bs-theme", theme);
+    } else {
+      theme = "dark";
+    }
+  });
+
+  browser.runtime.onMessage.addListener((request) => {
+    if (request.method === "theme") {
+      htmlElement.setAttribute("data-bs-theme", request.theme);
+    }
+  });
   initializeCheckboxes();
   addCheckboxListeners();
 
@@ -22,7 +39,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // adds necessary functions for each input variable
   inputVars.forEach((item) => {
-    console.log(item);
     // implements input and submit buttons
     const inputField = document.getElementById(item + "Input");
     const submitButton = document.getElementById(item + "Submit");
@@ -41,7 +57,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // implements clear buttons
     const clearButton = document.getElementById(item + "Clear");
     clearButton.addEventListener("click", () => {
-      console.log(item);
       if (item === "data") {
         const confirmation = confirm(
           "Are you sure you want to delete all course data?"
@@ -230,7 +245,7 @@ function initializeInfoFromCourseData(courseDataKeys) {
 
 function styleCheckbox(input) {
   input.style.backgroundColor = input.checked ? "black" : "white";
-  input.style.borderColor = input.checked ? "black" : "white";
+  input.style.borderColor = input.checked ? "black" : "black";
   input.style.setProperty(
     "--bs-form-switch-bg",
     input.checked ? "blue" : "white"
@@ -308,16 +323,17 @@ function createCheckboxColumn(key, courseDataInfo, width) {
   checkboxCol.style.justifyContent = "center";
   checkboxCol.style.alignItems = "center";
 
-  // let checkboxDiv = document.createElement("div");
-  // checkboxDiv.className = "form-check";
-  // checkboxCol.appendChild(checkboxDiv);
-
   let checkbox = document.createElement("input");
   checkbox.className = "form-check-input";
   checkbox.type = "checkbox";
   checkbox.id = key + "Include";
   checkbox.style.margin = "0";
   checkbox.style.verticalAlign = "middle";
+  if (theme === "light") {
+    checkbox.style.borderColor = "black";
+  } else if (theme === "dark") {
+    checkbox.style.borderColor = "white";
+  }
   checkboxCol.appendChild(checkbox);
 
   if (courseDataInfo) {
@@ -342,12 +358,6 @@ function createRemoveColumn(key, width) {
   removeCol.style.justifyContent = "center";
   removeCol.style.alignItems = "center";
 
-  // let removeDiv = document.createElement("div");
-  // removeDiv.className = "form-check";
-  // removeDiv.style.display = "flex";
-  // removeDiv.style.justifyContent = "center";
-  // removeCol.appendChild(removeDiv);
-
   let removeIcon = document.createElement("i");
   removeIcon.className = "bi bi-trash";
   removeIcon.id = key + "Remove";
@@ -356,22 +366,27 @@ function createRemoveColumn(key, width) {
   removeIcon.style.verticalAlign = "middle";
   removeCol.appendChild(removeIcon);
 
-  removeIcon.addEventListener("click", () => {
+  removeIcon.addEventListener("click", async () => {
     const confirmation = confirm(
       `Are you sure you want to delete the course data for: ${key}`
     );
     if (confirmation) {
-      browser.storage.local.get("courseData").then((storage) => {
-        if (storage.courseData) {
-          delete storage.courseData[key];
-          browser.storage.local
-            .set({ courseData: storage.courseData })
-            .then(() => {
-              displayCourseDataOptions(Object.keys(storage.courseData).sort());
-            });
-          browser.runtime.sendMessage({ method: "courseRemoved", key: key });
-        }
-      });
+      let { courseData = {} } = await browser.storage.local.get("courseData");
+      if (courseData) {
+        delete courseData[key];
+        await browser.storage.local.set({ courseData });
+      }
+
+      let { courseDataInfo = {} } = await browser.storage.sync.get(
+        "courseDataInfo"
+      );
+      if (courseDataInfo) {
+        delete courseDataInfo[key];
+        delete courseDataInfo[key + "Include"];
+        await browser.storage.sync.set({ courseDataInfo });
+      }
+
+      displayCourseDataOptions(Object.keys(courseData).sort());
     }
   });
 
