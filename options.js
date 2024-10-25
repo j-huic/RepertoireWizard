@@ -1,6 +1,23 @@
+let theme;
+
 document.addEventListener("DOMContentLoaded", function () {
+  const htmlElement = document.documentElement;
   const inputVars = ["blacklist", "categories", "rename", "positions", "data"];
 
+  browser.storage.sync.get("theme").then((storage) => {
+    if (storage.theme) {
+      theme = "light";
+      htmlElement.setAttribute("data-bs-theme", theme);
+    } else {
+      theme = "dark";
+    }
+  });
+
+  browser.runtime.onMessage.addListener((request) => {
+    if (request.method === "theme") {
+      htmlElement.setAttribute("data-bs-theme", request.theme);
+    }
+  });
   initializeCheckboxes();
   addCheckboxListeners();
 
@@ -22,7 +39,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // adds necessary functions for each input variable
   inputVars.forEach((item) => {
-    console.log(item);
     // implements input and submit buttons
     const inputField = document.getElementById(item + "Input");
     const submitButton = document.getElementById(item + "Submit");
@@ -41,9 +57,20 @@ document.addEventListener("DOMContentLoaded", function () {
     // implements clear buttons
     const clearButton = document.getElementById(item + "Clear");
     clearButton.addEventListener("click", () => {
-      inputField.value = "";
-      inputField.style.height = "auto";
-      browser.storage.sync.remove(item);
+      if (item === "data") {
+        const confirmation = confirm(
+          "Are you sure you want to delete all course data?"
+        );
+        if (confirmation) {
+          browser.storage.local.remove("courseData");
+          let container = document.getElementById("courseOptionsContainer");
+          emptyContainer(container);
+        }
+      } else {
+        inputField.value = "";
+        inputField.style.height = "auto";
+        browser.storage.sync.remove(item);
+      }
     });
 
     // implements info icons/text
@@ -60,17 +87,16 @@ document.addEventListener("DOMContentLoaded", function () {
     .then(function (storage) {
       if (storage.courseData) {
         displayCourseDataOptions(Object.keys(storage.courseData).sort());
-        const fileStatusMessage = document.getElementById("fileStatusMessage");
-        fileStatusMessage.textContent =
-          "Course data file already exists: " +
-          storage.courseDataFilename +
-          " (uploaded on   " +
-          storage.courseDataTimestamp +
-          ")";
       }
     });
 });
 // functions
+
+function emptyContainer(element) {
+  while (element.firstChild) {
+    element.removeChild(element.firstChild);
+  }
+}
 
 function submitBlacklist() {
   const blacklistInput = document.getElementById("blacklistInput");
@@ -219,7 +245,7 @@ function initializeInfoFromCourseData(courseDataKeys) {
 
 function styleCheckbox(input) {
   input.style.backgroundColor = input.checked ? "black" : "white";
-  input.style.borderColor = input.checked ? "black" : "white";
+  input.style.borderColor = input.checked ? "black" : "black";
   input.style.setProperty(
     "--bs-form-switch-bg",
     input.checked ? "blue" : "white"
@@ -230,7 +256,19 @@ function createCourseDataOptionsRow(key, container, courseDataInfo) {
   let row = document.createElement("div");
   row.className = "row align-items-center mb-2";
 
-  // label column
+  let labelCol = createLabelColumn(key);
+  let switchCol = createSwitchColumn(key, courseDataInfo, 2);
+  let checkboxCol = createCheckboxColumn(key, courseDataInfo, 2);
+  let removeCol = createRemoveColumn(key, 2);
+
+  row.appendChild(labelCol);
+  row.appendChild(switchCol);
+  row.appendChild(checkboxCol);
+  row.appendChild(removeCol);
+  container.appendChild(row);
+}
+
+function createLabelColumn(key) {
   let labelCol = document.createElement("div");
   labelCol.className = "col-6 text-start";
   let label = document.createElement("label");
@@ -238,40 +276,31 @@ function createCourseDataOptionsRow(key, container, courseDataInfo) {
   label.className = "form-check-label me-2";
   label.htmlFor = key;
   labelCol.appendChild(label);
+  return labelCol;
+}
 
-  // switch column
+function createSwitchColumn(key, courseDataInfo, width) {
   let switchCol = document.createElement("div");
-  switchCol.className = "col-1";
+  switchCol.className = `col-${width}`;
   switchCol.style.display = "flex";
   switchCol.style.justifyContent = "center";
+  switchCol.style.alignItems = "center";
+
   let switchDiv = document.createElement("div");
   switchDiv.className = "form-check form-switch";
+  switchDiv.style.display = "flex";
+  switchDiv.style.justifyContent = "center";
   switchCol.appendChild(switchDiv);
 
   let input = document.createElement("input");
   input.className = "form-check-input";
   input.type = "checkbox";
   input.id = key;
+  input.style.verticalAlign = "middle";
   switchDiv.appendChild(input);
 
-  // checkbox column
-  let checkboxCol = document.createElement("div");
-  checkboxCol.className = "col-1";
-  checkboxCol.style.display = "flex";
-  checkboxCol.style.justifyContent = "center";
-  let checkboxDiv = document.createElement("div");
-  checkboxDiv.className = "form-check";
-  checkboxCol.appendChild(checkboxDiv);
-
-  let checkbox = document.createElement("input");
-  checkbox.className = "form-check-input";
-  checkbox.type = "checkbox";
-  checkbox.id = key + "Include";
-  checkboxDiv.appendChild(checkbox);
-
-  if (courseDataInfo !== undefined) {
+  if (courseDataInfo) {
     input.checked = courseDataInfo[key];
-    checkbox.checked = courseDataInfo[key + "Include"];
   }
   styleCheckbox(input);
 
@@ -284,6 +313,33 @@ function createCourseDataOptionsRow(key, container, courseDataInfo) {
     });
   });
 
+  return switchCol;
+}
+
+function createCheckboxColumn(key, courseDataInfo, width) {
+  let checkboxCol = document.createElement("div");
+  checkboxCol.className = `col-${width}`;
+  checkboxCol.style.display = "flex";
+  checkboxCol.style.justifyContent = "center";
+  checkboxCol.style.alignItems = "center";
+
+  let checkbox = document.createElement("input");
+  checkbox.className = "form-check-input";
+  checkbox.type = "checkbox";
+  checkbox.id = key + "Include";
+  checkbox.style.margin = "0";
+  checkbox.style.verticalAlign = "middle";
+  if (theme === "light") {
+    checkbox.style.borderColor = "black";
+  } else if (theme === "dark") {
+    checkbox.style.borderColor = "white";
+  }
+  checkboxCol.appendChild(checkbox);
+
+  if (courseDataInfo) {
+    checkbox.checked = courseDataInfo[key + "Include"];
+  }
+
   checkbox.addEventListener("change", () => {
     browser.storage.sync.get(["courseDataInfo"]).then((storage) => {
       let courseDataInfo = storage.courseDataInfo || {};
@@ -292,10 +348,49 @@ function createCourseDataOptionsRow(key, container, courseDataInfo) {
     });
   });
 
-  row.appendChild(labelCol);
-  row.appendChild(switchCol);
-  row.appendChild(checkboxCol);
-  container.appendChild(row);
+  return checkboxCol;
+}
+
+function createRemoveColumn(key, width) {
+  let removeCol = document.createElement("div");
+  removeCol.className = `col-${width}`;
+  removeCol.style.display = "flex";
+  removeCol.style.justifyContent = "center";
+  removeCol.style.alignItems = "center";
+
+  let removeIcon = document.createElement("i");
+  removeIcon.className = "bi bi-trash";
+  removeIcon.id = key + "Remove";
+  removeIcon.style.cursor = "pointer";
+  removeIcon.style.margin = "0";
+  removeIcon.style.verticalAlign = "middle";
+  removeCol.appendChild(removeIcon);
+
+  removeIcon.addEventListener("click", async () => {
+    const confirmation = confirm(
+      `Are you sure you want to delete the course data for: ${key}`
+    );
+    if (confirmation) {
+      let { courseData = {} } = await browser.storage.local.get("courseData");
+      if (courseData) {
+        delete courseData[key];
+        await browser.storage.local.set({ courseData });
+      }
+
+      let { courseDataInfo = {} } = await browser.storage.sync.get(
+        "courseDataInfo"
+      );
+      if (courseDataInfo) {
+        delete courseDataInfo[key];
+        delete courseDataInfo[key + "Include"];
+        await browser.storage.sync.set({ courseDataInfo });
+      }
+
+      displayCourseDataOptions(Object.keys(courseData).sort());
+    }
+  });
+
+  return removeCol;
 }
 
 function displayCourseDataOptions(courseDataKeys) {
@@ -311,6 +406,8 @@ function displayCourseDataOptions(courseDataKeys) {
     "Identify which side each course is meant for and set whether to enable it for move highlighting:";
   switchLabelText = "Color";
   checkboxLabelText = "Include";
+  removeLabelText = "Remove";
+
   createOptionsTitleRow(
     optionsContainer,
     titleText,
@@ -336,36 +433,27 @@ function createOptionsTitleRow(
   const titleRow = document.createElement("div");
   titleRow.className = "row align-items-center mb-3";
 
-  // title column
-  const titleCol = document.createElement("div");
-  titleCol.className = "col-6 text-start";
-  titleCol.id = "titleCol";
-  const titleLabel = document.createElement("span");
-  titleLabel.textContent = titleText;
-  titleCol.appendChild(titleLabel);
-
-  // switch column
-  const switchCol = document.createElement("div");
-  switchCol.className = "col-1";
-  switchCol.id = "switchCol";
-  switchCol.style.display = "flex";
-  switchCol.style.justifyContent = "center";
-  const switchLabel = document.createElement("span");
-  switchLabel.textContent = switchLabelText;
-  switchCol.appendChild(switchLabel);
-
-  // checkbox column
-  const checkboxCol = document.createElement("div");
-  checkboxCol.className = "col-1";
-  checkboxCol.id = "checkboxCol";
-  checkboxCol.style.display = "flex";
-  checkboxCol.style.justifyContent = "center";
-  const checkboxLabel = document.createElement("span");
-  checkboxLabel.textContent = checkboxLabelText;
-  checkboxCol.appendChild(checkboxLabel);
+  // title, switch, checkbox, remove cols
+  const titleCol = createOptionsTitleColumn(6, titleText, "left");
+  const switchCol = createOptionsTitleColumn(2, switchLabelText, "center");
+  const checkboxCol = createOptionsTitleColumn(2, checkboxLabelText, "center");
+  const removeCol = createOptionsTitleColumn(2, "Remove", "center");
 
   titleRow.appendChild(titleCol);
   titleRow.appendChild(switchCol);
   titleRow.appendChild(checkboxCol);
+  titleRow.appendChild(removeCol);
   container.appendChild(titleRow);
+}
+
+function createOptionsTitleColumn(width, labelText, justifyContent) {
+  const col = document.createElement("div");
+  col.className = `col-${width} text-start`;
+  col.style.display = "flex";
+  col.style.justifyContent = justifyContent;
+  const label = document.createElement("span");
+  label.textContent = labelText;
+  col.appendChild(label);
+
+  return col;
 }
