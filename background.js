@@ -3,7 +3,7 @@ import { Chess } from "./libs/chess.js";
 
 let coursesMetaData = {};
 let abortController = new AbortController();
-let titleToID = {};
+let idToTitle = {};
 
 browser.runtime.onMessage.addListener(async (request, sender) => {
   if (request.method === "getOptions") {
@@ -31,12 +31,12 @@ browser.runtime.onMessage.addListener(async (request, sender) => {
     abortController.abort();
     return;
   } else if (request.method === "courseRemoved") {
-    coursesMetaData[titleToID[request.key]].inMemory = false;
+    coursesMetaData[request.key].inMemory = false;
   } else if (request.method === "saveCourseData") {
-    let id = await getCurrentCourseID();
-    let metaData = coursesMetaData[id];
+    let courseID = await getCurrentCourseID();
+    let metaData = coursesMetaData[idToTitle[courseID]];
     let bigDict = mergeDictList(metaData.allMoves);
-    mergeFenDictWithCourseData(metaData.title, id, bigDict);
+    mergeFenDictWithCourseData(metaData.title, bigDict);
   } else if (request.method === "startScrape") {
     let coursePage = await scrapeCoursePage();
     abortController = new AbortController();
@@ -62,20 +62,18 @@ function sendProgressMessage(info) {
 async function getMetaData() {
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
   const activeTab = tabs[0];
+  let courseID = validateCourseURL(activeTab.url);
 
-  if (activeTab.url.includes("chessable.com/course/")) {
-    let courseID = activeTab.url.split("course/")[1];
-    courseID = courseID.replace(/\/$/, "");
-    if (isNaN(courseID)) {
-      return null;
-    }
-
-    if (coursesMetaData.hasOwnProperty(courseID)) {
-      return coursesMetaData[courseID];
+  if (courseID) {
+    let courseTitle = idToTitle[courseID];
+    if (coursesMetaData.hasOwnProperty(courseTitle)) {
+      return coursesMetaData[courseTitle];
     } else {
       let coursePage = await scrapeCoursePage();
       if (coursePage) {
-        coursesMetaData[courseID] = {
+        idToTitle[courseID] = coursePage.title;
+        coursesMetaData[coursePage.title] = {
+          id: courseID,
           title: coursePage.title,
           chapters: coursePage.chapters,
           scrapedChapters: [],
@@ -83,8 +81,7 @@ async function getMetaData() {
           lineCount: 0,
           inMemory: await existsInCourseData(coursePage.title),
         };
-        titleToID[coursePage.title] = courseID;
-        return coursesMetaData[courseID];
+        return coursesMetaData[coursePage.title];
       } else {
         return null;
       }
@@ -98,7 +95,7 @@ async function scrapeNMissingChapters(coursePage, maxChapters = 11, signal) {
   let i = 0;
   let n = 0;
   let chapterCount = coursePage.chapters.length;
-  let metaData = coursesMetaData[coursePage.id];
+  let metaData = coursesMetaData[coursePage.title];
 
   if (maxChapters === 11) {
     maxChapters = chapterCount;
@@ -154,7 +151,6 @@ async function scrapeCoursePage() {
       return response;
     } catch (error) {
       return null;
-      // console.error("error in scrapeCoursePage()", error);
     }
   } else {
     return null;
@@ -176,7 +172,7 @@ async function getMovesFromChapter(url, delay = 1000) {
 }
 
 // updates courseData in local storage with new fenDict
-async function mergeFenDictWithCourseData(courseTitle, courseID, fenDict) {
+async function mergeFenDictWithCourseData(courseTitle, fenDict) {
   let { courseData = {} } = await browser.storage.local.get("courseData");
   if (courseData.hasOwnProperty(courseTitle)) {
     mergeDictsFaster(courseData[courseTitle], fenDict);
@@ -192,10 +188,10 @@ async function mergeFenDictWithCourseData(courseTitle, courseID, fenDict) {
     courseDataInfo[courseTitle] = false;
     courseDataInfo[courseTitle + "Include"] = true;
     await browser.storage.sync.set({ courseDataInfo });
-    coursesMetaData[courseID].inMemory = true;
-    coursesMetaData[courseID].scrapedChapters = [];
-    coursesMetaData[courseID].allMoves = [];
-    coursesMetaData[courseID].lineCount = 0;
+    coursesMetaData[courseTitle].inMemory = true;
+    coursesMetaData[courseTitle].scrapedChapters = [];
+    coursesMetaData[courseTitle].allMoves = [];
+    coursesMetaData[courseTitle].lineCount = 0;
     updatePopupInfo();
   } catch (error) {
     console.error(`Error merging ${courseTitle} with courseData: `, error);
@@ -210,7 +206,7 @@ async function existsInCourseData(courseTitle) {
 // sends course metadata to popup script
 async function updatePopupInfo() {
   let courseID = await getCurrentCourseID();
-  let metaData = coursesMetaData[courseID];
+  let metaData = coursesMetaData[idToTitle[courseID]];
   try {
     browser.runtime.sendMessage({ method: "updateInfo", metaData });
   } catch {}

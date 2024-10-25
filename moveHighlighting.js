@@ -11,8 +11,8 @@ browser.runtime.sendMessage({ method: "getOptions" }).then((response) => {
 
   if (options.highlightMoves) {
     browser.storage.local.get("courseData").then((result) => {
-      allcourses = result.courseData;
-      if (allcourses) {
+      if (result.courseData) {
+        allcourses = result.courseData;
         mainObserver.observe(document, { childList: true, subtree: true });
         if (document.readyState === "complete") {
           setTimeout(() => {
