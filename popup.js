@@ -1,9 +1,23 @@
-const cogwheel = document.getElementById("settingsButton");
-const htmlElement = document.documentElement;
 let theme;
+const htmlElement = document.documentElement;
 
-cogwheel.addEventListener("click", () => {
+const settingsIcon = document.getElementById("settingsIcon");
+const infoIcon = document.getElementById("infoIcon");
+const logIcon = document.getElementById("logsIcon");
+
+settingsIcon.addEventListener("click", () => {
   browser.runtime.openOptionsPage();
+});
+infoIcon.addEventListener("click", () => {
+  browser.tabs.create({
+    url: browser.runtime.getURL("options.html?tab=info-tab"),
+  });
+});
+
+logIcon.addEventListener("click", () => {
+  browser.tabs.create({
+    url: browser.runtime.getURL("options.html?tab=logs-tab"),
+  });
 });
 
 const lightSwitch = document.getElementById("lightSwitch");

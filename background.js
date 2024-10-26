@@ -36,7 +36,7 @@ browser.runtime.onMessage.addListener(async (request, sender) => {
     let courseID = await getCurrentCourseID();
     let metaData = coursesMetaData[idToTitle[courseID]];
     let bigDict = mergeDictList(metaData.allMoves);
-    mergeFenDictWithCourseData(metaData.title, bigDict);
+    mergeFenDictWithCourseData(metaData, bigDict);
   } else if (request.method === "startScrape") {
     let coursePage = await scrapeCoursePage();
     abortController = new AbortController();
@@ -91,6 +91,28 @@ async function getMetaData() {
   }
 }
 
+async function addLogMessage(
+  message,
+  url = null,
+  linkText = null,
+  status = "neutral"
+) {
+  const { logs = [] } = await browser.storage.local.get("logs");
+  const newLog = {
+    timestamp: Date.now(),
+    message,
+    url,
+    linkText,
+    status,
+  };
+
+  logs.push(newLog);
+  if (logs.length > 1000) logs.splice(0, logs.length - 1000);
+
+  await browser.storage.local.set({ logs });
+  // await loadLogsStructured();
+}
+
 async function scrapeNMissingChapters(coursePage, maxChapters = 11, signal) {
   let i = 0;
   let n = 0;
@@ -125,8 +147,20 @@ async function scrapeNMissingChapters(coursePage, maxChapters = 11, signal) {
       metaData.lineCount += moves.length;
       metaData.scrapedChapters.push(chapter.url);
       updatePopupInfo();
+      addLogMessage(
+        `Scraped ${moves.length} moves from {link}`,
+        chapter.url,
+        chapter.title,
+        "good"
+      );
     } catch (error) {
       console.error(error);
+      addLogMessage(
+        `Error scraping in {link}`,
+        chapter.url,
+        chapter.title,
+        "bad"
+      );
     } finally {
       i++;
       n++;
@@ -172,7 +206,8 @@ async function getMovesFromChapter(url, delay = 1000) {
 }
 
 // updates courseData in local storage with new fenDict
-async function mergeFenDictWithCourseData(courseTitle, fenDict) {
+async function mergeFenDictWithCourseData(metaData, fenDict, lineCount) {
+  let courseTitle = metaData.title;
   let { courseData = {} } = await browser.storage.local.get("courseData");
   if (courseData.hasOwnProperty(courseTitle)) {
     mergeDictsFaster(courseData[courseTitle], fenDict);
@@ -188,11 +223,17 @@ async function mergeFenDictWithCourseData(courseTitle, fenDict) {
     courseDataInfo[courseTitle] = false;
     courseDataInfo[courseTitle + "Include"] = true;
     await browser.storage.sync.set({ courseDataInfo });
+    addLogMessage(
+      `Saved ${metaData.lineCount} lines from ${courseTitle}`,
+      null,
+      null,
+      "good"
+    );
+    updatePopupInfo();
     coursesMetaData[courseTitle].inMemory = true;
     coursesMetaData[courseTitle].scrapedChapters = [];
     coursesMetaData[courseTitle].allMoves = [];
     coursesMetaData[courseTitle].lineCount = 0;
-    updatePopupInfo();
   } catch (error) {
     console.error(`Error merging ${courseTitle} with courseData: `, error);
   }

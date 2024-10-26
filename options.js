@@ -1,9 +1,121 @@
 let theme;
+const inputVars = ["blacklist", "categories", "rename", "positions", "data"];
 
-document.addEventListener("DOMContentLoaded", function () {
-  const htmlElement = document.documentElement;
-  const inputVars = ["blacklist", "categories", "rename", "positions", "data"];
+document.addEventListener("DOMContentLoaded", async () => {
+  let htmlElement = document.documentElement;
+  initialiseTheme();
 
+  browser.runtime.onMessage.addListener((request) => {
+    if (request.method === "theme") {
+      htmlElement.setAttribute("data-bs-theme", request.theme);
+    }
+  });
+
+  initializeCheckboxes();
+  addCheckboxListeners();
+  initializeInputs();
+  addInputListeners();
+  initializeCourseData();
+
+  const params = new URLSearchParams(window.location.search);
+  const tabId = params.get("tab");
+  if (tabId) {
+    document.querySelector(`#${tabId}`).click();
+  }
+
+  document.querySelector("#options-tab").addEventListener("click", () => {
+    ["categories", "rename", "positions"].forEach((item) => {
+      let input = document.getElementById(item + "Input");
+      resizeInput(input);
+    });
+  });
+
+  document.getElementById("clearLogs").addEventListener("click", clearLogs);
+  await loadLogs();
+});
+
+function initializeCourseData() {
+  browser.storage.local
+    .get(["courseData", "courseDataFilename", "courseDataTimestamp"])
+    .then(function (storage) {
+      if (storage.courseData) {
+        displayCourseDataOptions(Object.keys(storage.courseData).sort());
+      }
+    });
+}
+
+async function loadLogs() {
+  const logContainer = document.querySelector(".log-container");
+  const { logs = [] } = await browser.storage.local.get("logs");
+
+  while (logContainer.firstChild) {
+    logContainer.removeChild(logContainer.firstChild);
+  }
+
+  logs.forEach((log) => {
+    const logEntry = document.createElement("div");
+    logEntry.className = "log-entry";
+
+    const timestamp = document.createElement("span");
+    timestamp.className = "log-timestamp";
+    timestamp.textContent = new Date(log.timestamp).toLocaleString();
+    logEntry.appendChild(timestamp);
+
+    const message = document.createElement("span");
+    message.className = "log-message";
+
+    // Add status indicator if specified
+    if (log.status) {
+      const status = document.createElement("span");
+      status.className = `status-indicator status-${log.status}`;
+
+      switch (log.status) {
+        case "good":
+          status.textContent = "+ ";
+          break;
+        case "bad":
+          status.textContent = "x ";
+          break;
+      }
+
+      message.appendChild(status);
+    }
+
+    if (log.url && log.linkText) {
+      const parts = log.message.split("{link}");
+
+      parts.forEach((part, index) => {
+        if (part) {
+          message.appendChild(document.createTextNode(part));
+        }
+        if (index < parts.length - 1) {
+          const link = document.createElement("a");
+          link.href = log.url;
+          link.textContent = log.linkText;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          message.appendChild(link);
+        }
+      });
+    } else {
+      message.appendChild(document.createTextNode(log.message));
+    }
+
+    logEntry.appendChild(message);
+    logContainer.appendChild(logEntry);
+  });
+
+  logContainer.scrollTop = logContainer.scrollHeight;
+}
+
+async function clearLogs() {
+  if (confirm("Are you sure you want to clear all logs?")) {
+    await browser.storage.local.set({ logs: [] });
+    await loadLogs();
+  }
+}
+
+function initialiseTheme() {
   browser.storage.sync.get("theme").then((storage) => {
     if (storage.theme) {
       theme = "light";
@@ -12,32 +124,9 @@ document.addEventListener("DOMContentLoaded", function () {
       theme = "dark";
     }
   });
+}
 
-  browser.runtime.onMessage.addListener((request) => {
-    if (request.method === "theme") {
-      htmlElement.setAttribute("data-bs-theme", request.theme);
-    }
-  });
-  initializeCheckboxes();
-  addCheckboxListeners();
-
-  // populates inputs if values exist in storage
-  browser.storage.sync.get(inputVars).then((storage) => {
-    for (let item in storage) {
-      let inputField = document.getElementById(item + "Input");
-      if (inputField && storage[item] !== undefined) {
-        if (Array.isArray(storage[item])) {
-          inputField.value = storage[item].join(", ");
-          resizeInput(inputField, storage[item], false);
-        } else if (typeof storage[item] === "object") {
-          inputField.value = JSON.stringify(storage[item], null, 2);
-          resizeInput(inputField, storage[item]);
-        }
-      }
-    }
-  });
-
-  // adds necessary functions for each input variable
+function addInputListeners() {
   inputVars.forEach((item) => {
     // implements input and submit buttons
     const inputField = document.getElementById(item + "Input");
@@ -63,6 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
         );
         if (confirmation) {
           browser.storage.local.remove("courseData");
+          browser.storage.sync.remove("courseDataInfo");
           let container = document.getElementById("courseOptionsContainer");
           emptyContainer(container);
         }
@@ -80,17 +170,23 @@ document.addEventListener("DOMContentLoaded", function () {
       alert(text.textContent);
     });
   });
+}
 
-  // populates the course data options if they exist and notifies existance of course data fiel
-  browser.storage.local
-    .get(["courseData", "courseDataFilename", "courseDataTimestamp"])
-    .then(function (storage) {
-      if (storage.courseData) {
-        displayCourseDataOptions(Object.keys(storage.courseData).sort());
+function initializeInputs() {
+  browser.storage.sync.get(inputVars).then((storage) => {
+    for (let item in storage) {
+      let inputField = document.getElementById(item + "Input");
+      if (inputField && storage[item] !== undefined) {
+        if (Array.isArray(storage[item])) {
+          inputField.value = storage[item].join(", ");
+        } else if (typeof storage[item] === "object") {
+          inputField.value = JSON.stringify(storage[item], null, 2);
+          resizeInput(inputField, storage[item]);
+        }
       }
-    });
-});
-// functions
+    }
+  });
+}
 
 function emptyContainer(element) {
   while (element.firstChild) {
@@ -174,14 +270,10 @@ function addCheckboxListeners() {
   });
 }
 
-function resizeInput(input, obj, stringify = true) {
-  if (stringify) {
-    input.value = JSON.stringify(obj, null, 2);
-  }
+function resizeInput(input) {
   input.style.whiteSpace = "pre";
   input.style.width = "max";
   input.style.height = "auto";
-  input.style.width = input.scrollWidth + 25 + "px";
   input.style.height = input.scrollHeight + 5 + "px";
 }
 
@@ -371,22 +463,26 @@ function createRemoveColumn(key, width) {
       `Are you sure you want to delete the course data for: ${key}`
     );
     if (confirmation) {
-      let { courseData = {} } = await browser.storage.local.get("courseData");
-      if (courseData) {
-        delete courseData[key];
-        await browser.storage.local.set({ courseData });
-      }
+      try {
+        let { courseData = {} } = await browser.storage.local.get("courseData");
+        if (courseData) {
+          delete courseData[key];
+          await browser.storage.local.set({ courseData });
+        }
 
-      let { courseDataInfo = {} } = await browser.storage.sync.get(
-        "courseDataInfo"
-      );
-      if (courseDataInfo) {
-        delete courseDataInfo[key];
-        delete courseDataInfo[key + "Include"];
-        await browser.storage.sync.set({ courseDataInfo });
+        let { courseDataInfo = {} } = await browser.storage.sync.get(
+          "courseDataInfo"
+        );
+        if (courseDataInfo) {
+          delete courseDataInfo[key];
+          delete courseDataInfo[key + "Include"];
+          await browser.storage.sync.set({ courseDataInfo });
+        }
+        browser.runtime.sendMessage({ method: "courseRemoved", key: key });
+        displayCourseDataOptions(Object.keys(courseData).sort());
+      } catch (error) {
+        console.log("error removing course", error);
       }
-
-      displayCourseDataOptions(Object.keys(courseData).sort());
     }
   });
 

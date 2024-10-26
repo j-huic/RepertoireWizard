@@ -1,232 +1,504 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-  />
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css"
-  />
+<html data-bs-theme="dark">
   <head>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css"
+    />
+
+    <link rel="stylesheet" href="optionsStyles.css" />
     <script src="libs/browser-polyfill.js"></script>
     <script src="options.js"></script>
   </head>
 
-  <body class="container mt-5 w-75">
-    <h1>Options</h1>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12">
+          <ul class="nav nav-tabs" id="optionsTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link active"
+                id="options-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#options"
+                type="button"
+                role="tab"
+              >
+                Options
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                id="info-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#info"
+                type="button"
+                role="tab"
+              >
+                Info
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                id="logs-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#logs"
+                type="button"
+                role="tab"
+              >
+                Logs
+              </button>
+            </li>
+          </ul>
 
-    <br />
+          <!-- Tab content -->
+          <div class="tab-content" id="optionsTabContent">
+            <!-- Options tab -->
+            <div class="tab-pane fade show active" id="options" role="tabpanel">
+              <div id="existingOptionsContent">
+                <h1>Feature Settings</h1>
 
-    <h5>Chessable</h5>
-    <div>
-      <input type="checkbox" id="removeNotifs" name="checkbox" />
-      <label for="removeNotifs">Hide Chessable Notification Alert</label>
-    </div>
-    <div>
-      <input type="checkbox" id="filterToggle" name="checkbox" />
-      <label for="filterToggle">Toggle Course Filtering</label>
-    </div>
-    <div>
-      <input type="checkbox" id="categoriesToggle" name="checkbox" />
-      <label for="categoriesToggle">Toggle Categorisation</label>
-    </div>
-    <br />
-    <h5>Lichess</h5>
-    <div>
-      <input type="checkbox" id="highlightMoves" name="checkbox" />
-      <label for="highlightMoves"
-        >Highlight Recommendations in the Move Tray</label
-      >
-    </div>
-    <div>
-      <input type="checkbox" id="sideAgnostic" name="checkbox" />
-      <label for="sideAgnostic">Side Agnostic Move Recommendations</label>
-    </div>
+                <br />
 
-    <div>
-      <input type="checkbox" id="removeWiki" name="checkbox" />
-      <label for="removeWiki">Remove Wiki from Sidebar</label>
-    </div>
-    <div>
-      <input type="checkbox" id="enablePositionSelector" name="checkbox" />
-      <label for="enablePositionSelector"
-        >Enable the Position Selector in Analysis Sidebar</label
-      >
-    </div>
-    <div>
-      <input type="checkbox" id="enablePositionSelector" name="checkbox" />
-      <label for="enablePositionSelector"
-        >Enable the Position Selector in Lichess Analysis Sidebar</label
-      >
-    </div>
-    <br />
+                <h5>Chessable</h5>
+                <div>
+                  <input type="checkbox" id="removeNotifs" name="checkbox" />
+                  <label for="removeNotifs"
+                    >Hide Chessable Notification Alert</label
+                  >
+                </div>
+                <div>
+                  <input type="checkbox" id="filterToggle" name="checkbox" />
+                  <label for="filterToggle">Toggle Course Filtering</label>
+                </div>
+                <div>
+                  <input
+                    type="checkbox"
+                    id="categoriesToggle"
+                    name="checkbox"
+                  />
+                  <label for="categoriesToggle">Toggle Categorisation</label>
+                </div>
+                <br />
+                <h5>Lichess</h5>
+                <div>
+                  <input type="checkbox" id="highlightMoves" name="checkbox" />
+                  <label for="highlightMoves"
+                    >Highlight Recommendations in the Move Tray</label
+                  >
+                </div>
+                <div>
+                  <input type="checkbox" id="sideAgnostic" name="checkbox" />
+                  <label for="sideAgnostic"
+                    >Side Agnostic Move Recommendations</label
+                  >
+                </div>
 
-    <div class="form-group mt-2">
-      <label for="blacklistInput">Filter Courses From the Dropdown</label>
-      <i
-        class="bi bi-info-circle mt-3 ml-3"
-        id="blacklistInfoIcon"
-        style="cursor: pointer; font-size: 1.15rem"
-      ></i>
-      <textarea
-        class="form-control mt-1 mb-1"
-        rows="1"
-        cols="20"
-        id="blacklistInput"
-        name="blacklistInput"
-      ></textarea>
-      <button class="btn btn-primary mt-2" type="button" id="blacklistSubmit">
-        Submit
-      </button>
-      <button
-        class="btn btn-secondary mt-2"
-        type="button"
-        id="blacklistClear"
-        for="blacklistInput"
-      >
-        Clear Blacklist
-      </button>
-      <!-- prettier-ignore -->
-      <div id="blacklistInfoText" style="display: none">Add blacklisted keywords to filter out unwanted courses. E.g. "short" will filter out Short & Sweet courses (separate with commas; not case sensitive).
+                <div>
+                  <input type="checkbox" id="removeWiki" name="checkbox" />
+                  <label for="removeWiki">Remove Wiki from Sidebar</label>
+                </div>
+                <div>
+                  <input
+                    type="checkbox"
+                    id="enablePositionSelector"
+                    name="checkbox"
+                  />
+                  <label for="enablePositionSelector"
+                    >Enable the Position Selector in Analysis Sidebar</label
+                  >
+                </div>
+
+                <br />
+
+                <div class="form-group mt-2">
+                  <label for="blacklistInput"
+                    >Filter Courses From the Dropdown</label
+                  >
+                  <i
+                    class="bi bi-info-circle mt-3 ml-3"
+                    id="blacklistInfoIcon"
+                    style="cursor: pointer; font-size: 1.15rem"
+                  ></i>
+                  <textarea
+                    class="form-control mt-1 mb-1"
+                    rows="1"
+                    cols="20"
+                    id="blacklistInput"
+                    name="blacklistInput"
+                    wrap="hard"
+                    style="resize: both; overflow: auto"
+                  ></textarea>
+                  <button
+                    class="btn btn-primary mt-2"
+                    type="button"
+                    id="blacklistSubmit"
+                  >
+                    Submit
+                  </button>
+                  <button
+                    class="btn btn-secondary mt-2"
+                    type="button"
+                    id="blacklistClear"
+                    for="blacklistInput"
+                  >
+                    Clear Blacklist
+                  </button>
+                  <!-- prettier-ignore -->
+                  <div id="blacklistInfoText" style="display: none">Add blacklisted keywords to filter out unwanted courses. E.g. "short" will filter out Short & Sweet courses (separate with commas; not case sensitive).
+                  </div>
+                </div>
+
+                <br />
+
+                <div class="form-group">
+                  <label for="categoriesInput"
+                    >Organise Courses by Category</label
+                  >
+                  <i
+                    class="bi bi-info-circle mt-3 ml-3"
+                    id="categoriesInfoIcon"
+                    style="cursor: pointer; font-size: 1.15rem"
+                  ></i>
+                  <textarea
+                    class="form-control mt-1 mb-1"
+                    rows="1"
+                    cols="20"
+                    id="categoriesInput"
+                    name="categoriesInput"
+                    wrap="hard"
+                    style="resize: both; overflow: auto"
+                  ></textarea>
+                  <button
+                    class="btn btn-primary mt-2"
+                    type="button"
+                    id="categoriesSubmit"
+                  >
+                    Submit
+                  </button>
+                  <button
+                    class="btn btn-secondary mt-2"
+                    type="button"
+                    id="categoriesClear"
+                    for="categoriesInput"
+                  >
+                    Clear Categories
+                  </button>
+                  <!-- prettier-ignore -->
+                  <div id="categoriesInfoText" style="display: none">Add dictionary with categories for keys and arrays of keywords for values (keywords are not case sensitive and are applied before the renaming). 
+            E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
+                  </div>
+                </div>
+
+                <br />
+
+                <div class="form-group">
+                  <label for="renameInput">Rename Courses</label>
+                  <i
+                    class="bi bi-info-circle mt-3 ml-3"
+                    id="renameInfoIcon"
+                    style="cursor: pointer; font-size: 1.15rem"
+                  ></i>
+                  <textarea
+                    class="form-control mt-1 mb-1"
+                    rows="1"
+                    cols="20"
+                    id="renameInput"
+                    name="renameInput"
+                    wrap="hard"
+                    style="resize: both; overflow: auto"
+                  ></textarea>
+                  <button
+                    class="btn btn-primary mt-2"
+                    type="button"
+                    id="renameSubmit"
+                  >
+                    Submit
+                  </button>
+                  <button
+                    class="btn btn-secondary mt-2"
+                    type="button"
+                    id="renameClear"
+                    for="renameInput"
+                  >
+                    Clear Rename
+                  </button>
+                  <!-- prettier-ignore -->
+                  <div id="renameInfoText" style="display: none; white-space: normal">Rename courses by adding a dictionary with original course name as key and new name as value. E.g. {"Lifetime Repertoires: Sam Shankland's d4 - Part 1": "Shankland d4 - QGA/Slav"} (not case sensitive)
+                  </div>
+                </div>
+
+                <br />
+
+                <div class="form-group">
+                  <label for="positionsInput">Add Position Selector Tree</label>
+                  <i
+                    class="bi bi-info-circle mt-3 ml-3"
+                    id="positionsInfoIcon"
+                    style="cursor: pointer; font-size: 1.15rem"
+                  ></i>
+                  <textarea
+                    class="form-control mt-1 mb-1"
+                    rows="1"
+                    cols="20"
+                    id="positionsInput"
+                    name="positionsInput"
+                    wrap="hard"
+                    style="resize: both; overflow: auto"
+                  ></textarea>
+                  <button
+                    class="btn btn-primary mt-2"
+                    type="button"
+                    id="positionsSubmit"
+                  >
+                    Submit
+                  </button>
+                  <button
+                    class="btn btn-secondary mt-2"
+                    type="button"
+                    id="positionsClear"
+                    for="positionsInput"
+                  >
+                    Clear Positions
+                  </button>
+                  <!-- prettier-ignore -->
+                  <div id="positionsInfoText" style="display: none">If you build a position selector tree in the sidebar, you can find the tree in this box in JSON to change, add, or remove items. You can also build it here as a nested object</div>
+                </div>
+
+                <br />
+
+                <div class="form-group">
+                  <label for="dataInput" class="form-label mt-3"
+                    >Upload Course Recommendation Data</label
+                  >
+                  <i
+                    class="bi bi-info-circle mt-3 ml-3"
+                    id="dataInfoIcon"
+                    style="cursor: pointer; font-size: 1.15rem"
+                  ></i>
+                  <!-- prettier-ignore -->
+                  <div id="dataInfoText" style="display: none">Alternatively to scraping with the extension, you may upload your own .json file where each key is a course name, and where each value is an object in itself with FEN strings as keys and a list of move strings as values. E.g. {"d4": {"fenstring" : ["Nf6", "d5", "c5", "f5"]}} Important: FEN strings must be cut off after the "-" in order to recognise transpositions.
+                  </div>
+                  <input
+                    type="file"
+                    id="dataInput"
+                    class="form-control"
+                    accept=".json"
+                  />
+                  <button id="dataSubmit" class="btn btn-primary mt-2">
+                    Upload
+                  </button>
+                  <button
+                    class="btn btn-secondary mt-2"
+                    type="button"
+                    id="dataClear"
+                    for="dataInput"
+                  >
+                    Clear Data
+                  </button>
+                </div>
+
+                <br />
+
+                <div id="courseOptionsContainer"></div>
+                <br />
+                <br />
+              </div>
+            </div>
+
+            <!-- Info tab -->
+            <div class="tab-pane fade" id="info" role="tabpanel">
+              <div class="row">
+                <div class="col-md-12">
+                  <h2 class="mb-4">Extension Instructions and Info</h2>
+                  <h6>
+                    Welcome! Repertoire Wizard aims to be minimal and
+                    unobtrusive. For this reason, all features are off by
+                    default and must be toggled and set up in order to work.
+                    Below is all the info you need to make the most of the
+                    extension.
+                  </h6>
+                  <div class="card mb-4 mt-4">
+                    <div class="card-body px-3">
+                      <h3 class="mb-3">Course Scraping</h3>
+                      <h4>How to Start</h4>
+                      <p>
+                        Navigate to the main page of the course you wish to
+                        scrape. Once in a course page, the extension popup will
+                        display course info and the scrape controls which
+                        constitute three buttons: Start, Save, and Abort.
+                      </p>
+                      <p>
+                        Once you press the start scraping button, the extension
+                        will sequentially open each chapter one by one in a
+                        separate (inactive) tab until it iterates through every
+                        available chapter. Once it is done, press the save
+                        button.
+                      </p>
+                      <p>
+                        The abort button can be used at any time to pause the
+                        process. You may also set to scrape a particular number
+                        of chapters at a time for testing purposes. In either
+                        case, the data scraped thus far will remain in
+                        background memory, and the process can be resumed. Keep
+                        in mind the background memory may expire after a short
+                        period of inactivity.
+                      </p>
+                      <h5>Important:</h5>
+                      <ul>
+                        <li>
+                          Once the scraping starts, remain with the course page
+                          as your active tab / window until the process is
+                          complete.
+                        </li>
+                        <li>
+                          Some chapters will fail to scrape due to various
+                          reasons. For instance, exercise chapters do not offer
+                          PGNs in the chapter page. These chapters will be
+                          skipped, and you may see incomplete scrape progress.
+                        </li>
+                        <li>
+                          The Logs tab keeps track of all chapter scrape
+                          attempts, and will display whether the chapter page
+                          was parsed successfuly, or whether there was an error.
+                        </li>
+                      </ul>
+                      <h4>Managing Course Data</h4>
+                      <p>
+                        At the bottom of the settings page is a section where
+                        you can manage the courses which have been entered into
+                        local data (this happens when you press the Save
+                        button). For each course you may select the board
+                        orientation for which you would like its move
+                        recommendations to show, and you can toggle whether you
+                        would like any of the courses to display or not. Lastly,
+                        the side agnostic move recommendation option makes all
+                        courses be displayed regardless of board orientation.
+                      </p>
+                      <h4>How it Works</h4>
+                      <p>
+                        The data structure which allows this feature is
+                        essentially a list of FEN positions where each item in
+                        the list has any number of corresponding moves (i.e.
+                        hash map / dictionary). Every time you make a move in
+                        the analysis board, the extension checks whether the FEN
+                        for that position is included in this list.
+                      </p>
+                      <p>
+                        This means that for every variation in a course, there
+                        are as many FEN-move pairs as there are half-moves in
+                        the line. For example, a 30-move line will have 60
+                        unique FEN positions. Considering that some courses have
+                        upwards of 1500 variations, these files can get large
+                        relative to the 10MB maximum allowed storage for an
+                        extension. This fact somewhat limits how unrestrained
+                        the scraping process can be (e.g. why moves are only
+                        kept in temporary memory prior to saving). It also means
+                        that there is a chance of something breaking with too
+                        many courses (personally tested up to 10)
+                      </p>
+                    </div>
+                  </div>
+                  <div class="card mb-4">
+                    <div class="card-body px-3">
+                      <h3 class="mb-3">Chessable Dropdown Organisation</h3>
+                      <p>
+                        These organising features are only applied to the course
+                        dropdown menu of the Chessable explore page.
+                      </p>
+                      <p>
+                        The latter two of these features require JSON inputs
+                        (JavaScript Object Notation), which are basically lists
+                        of key-value pairs. The input fields for these features
+                        in the options tab have clickable info icons which offer
+                        examples of the expected format for each input variable.
+                      </p>
+                      <h4>Filtering</h4>
+                      <p>
+                        The filtering works on a blacklist mechanism. Enter the
+                        keywords and all courses which contain any of those
+                        keywords will be removed from the dropdown menu.
+                      </p>
+                      <h4>Categorisation</h4>
+                      <p>
+                        Courses can be categorised in any number of (non-nested)
+                        categories. Similarly to the filtering, you only need to
+                        provide keywords to include courses in a category (e.g.
+                        {"White":["d4", "e4"]} will include all courses which
+                        have "d4" or "e4" in their title in the "White"
+                        category)
+                      </p>
+                      <h4>Renaming</h4>
+                      <p>
+                        This feature requires exact course titles (not case
+                        sensitive) as the keys, with their aliases as the values
+                        in the input JSON.
+                      </p>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-body">
+                      <h3 class="mb-3">Position Selector Tree</h3>
+                      <p>
+                        The position selector tree allows you to add links to
+                        your most commonly looked at positions. These links can
+                        be organised in nested categories of arbitrary depth.
+                      </p>
+                      <p>
+                        The tree can be built and altered in two ways. The more
+                        intuitive way is through the UI which is found in the
+                        analysis board sidebar after enabling the feature in the
+                        settings. The tree is build with two types of buttons.
+                        The + button adds a category node, while the @ button
+                        adds a FEN link. Category nodes can hold both other
+                        category nodes or FEN nodes, while the FEN nodes only
+                        serve as a position link. Therefore, category nodes can
+                        be seen as branches and parent nodes, whereas the FEN
+                        links are the leaf nodes of the tree.
+                      </p>
+                      <p>
+                        This tree is saved in JSON format, which is displayed in
+                        a text box in the settings menu. This text box allows
+                        for any changes to the tree as long as the remaining
+                        string respects the object notation.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Logs tab -->
+            <div class="tab-pane fade" id="logs" role="tabpanel">
+              <div class="row">
+                <div class="col-md-12">
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-3"
+                  >
+                    <h2>Scraping Logs</h2>
+                    <button
+                      class="btn btn-outline-secondary btn-sm"
+                      id="clearLogs"
+                    >
+                      Clear Logs
+                    </button>
+                  </div>
+                  <div class="log-container"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <br />
-
-    <div class="form-group">
-      <label for="categoriesInput">Organize Courses by Category</label>
-      <i
-        class="bi bi-info-circle mt-3 ml-3"
-        id="categoriesInfoIcon"
-        style="cursor: pointer; font-size: 1.15rem"
-      ></i>
-      <textarea
-        class="form-control mt-1 mb-1"
-        rows="1"
-        cols="20"
-        id="categoriesInput"
-        name="categoriesInput"
-        wrap="hard"
-        style="resize: both; overflow: auto"
-      ></textarea>
-      <button class="btn btn-primary mt-2" type="button" id="categoriesSubmit">
-        Submit
-      </button>
-      <button
-        class="btn btn-secondary mt-2"
-        type="button"
-        id="categoriesClear"
-        for="categoriesInput"
-      >
-        Clear Categories
-      </button>
-      <!-- prettier-ignore -->
-      <div id="categoriesInfoText" style="display: none">Add dictionary with categories for keys and arrays of keywords for values (keywords are not case sensitive and are applied before the renaming). 
-E.g. {"White":["Catalan", "e4"], "Black":["Sicilian", "Nimzo"]}
-      </div>
-    </div>
-
-    <br />
-
-    <div class="form-group">
-      <label for="renameInput">Rename Courses</label>
-      <i
-        class="bi bi-info-circle mt-3 ml-3"
-        id="renameInfoIcon"
-        style="cursor: pointer; font-size: 1.15rem"
-      ></i>
-      <textarea
-        class="form-control mt-1 mb-1"
-        rows="1"
-        cols="20"
-        id="renameInput"
-        name="renameInput"
-        wrap="hard"
-        style="resize: both; overflow: auto"
-      ></textarea>
-      <button class="btn btn-primary mt-2" type="button" id="renameSubmit">
-        Submit
-      </button>
-      <button
-        class="btn btn-secondary mt-2"
-        type="button"
-        id="renameClear"
-        for="renameInput"
-      >
-        Clear Rename
-      </button>
-      <!-- prettier-ignore -->
-      <div id="renameInfoText" style="display: none; white-space: normal">Rename courses by adding a dictionary with original course name as key and new name as value. E.g. {"Lifetime Repertoires: Sam Shankland's d4 - Part 1": "Shankland d4 - QGA/Slav"} (not case sensitive)
-      </div>
-    </div>
-
-    <br />
-
-    <div class="form-group">
-      <label for="positionsInput">Add Position Selector Tree</label>
-      <i
-        class="bi bi-info-circle mt-3 ml-3"
-        id="positionsInfoIcon"
-        style="cursor: pointer; font-size: 1.15rem"
-      ></i>
-      <textarea
-        class="form-control mt-1 mb-1"
-        rows="1"
-        cols="20"
-        id="positionsInput"
-        name="positionsInput"
-        wrap="hard"
-        style="resize: both; overflow: auto"
-      ></textarea>
-      <button class="btn btn-primary mt-2" type="button" id="positionsSubmit">
-        Submit
-      </button>
-      <button
-        class="btn btn-secondary mt-2"
-        type="button"
-        id="positionsClear"
-        for="positionsInput"
-      >
-        Clear Positions
-      </button>
-      <!-- prettier-ignore -->
-      <div id="positionsInfoText" style="display: none">If you build a position selector tree in the sidebar, you can find the tree in this box in JSON to change, add, or remove items. You can also build it here as a nested object</div>
-    </div>
-
-    <br />
-
-    <div class="form-group">
-      <label for="dataInput" class="form-label mt-3"
-        >Upload Course Recommendation Data</label
-      >
-      <i
-        class="bi bi-info-circle mt-3 ml-3"
-        id="dataInfoIcon"
-        style="cursor: pointer; font-size: 1.15rem"
-      ></i>
-      <!-- prettier-ignore -->
-      <div id="dataInfoText" style="display: none">Alternatively to scraping with the extension, you may upload your own .json file where each key is a course name, and where each value is an object in itself with FEN strings as keys and a list of move strings as values.
-E.g. {"d4": {"fenstring" : ["Nf6", "d5", "c5", "f5"]}}
-Important: FEN strings must be cut off after the "-" in order to recognize transpositions.
-      </div>
-      <!-- <div id="fileStatusMessage" class="mt-2"></div> -->
-      <input type="file" id="dataInput" class="form-control" accept=".json" />
-      <button id="dataSubmit" class="btn btn-primary mt-2">Upload</button>
-      <button
-        class="btn btn-secondary mt-2"
-        type="button"
-        id="dataClear"
-        for="dataInput"
-      >
-        Clear Data
-      </button>
-    </div>
-
-    <br />
-
-    <div id="courseOptionsContainer"></div>
-    <br />
-    <br />
+    <script src="libs/bootstrap.bundle.min.js"></script>
   </body>
 </html>

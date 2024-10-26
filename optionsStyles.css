@@ -1,0 +1,99 @@
+body {
+  padding: 20px;
+  max-width: 75%;
+  margin: 0 auto;
+}
+
+.nav-tabs {
+  margin-bottom: 24px;
+}
+
+.nav-tabs .nav-link {
+  font-size: 1.1rem;
+  padding: 12px 24px;
+  color: #666;
+  transition: none;
+}
+
+html[data-bs-theme="dark"] .nav-tabs .nav-link {
+  color: #999999;
+}
+
+.nav-tabs .nav-link.active {
+  font-weight: 500;
+  color: #333;
+}
+
+html[data-bs-theme="dark"] .nav-tabs .nav-link.active {
+  color: #ffffff;
+}
+
+/* Custom scrollbar for the log container */
+.log-container {
+  height: 500px;
+  overflow-y: auto;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+html[data-bs-theme="dark"] .log-container {
+  background-color: #212123;
+}
+
+.log-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.log-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.log-container::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.log-entry {
+  padding: 8px 12px;
+  border-bottom: 1px solid #dee2e6;
+  font-family: monospace;
+  font-size: small;
+  display: flex;
+  margin: 4px 0;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-timestamp {
+  color: #666;
+  margin-right: 8px;
+}
+
+.status-indicator {
+  display: inline-block;
+  margin-right: 4px;
+  font-weight: bold;
+  font-size: 1.5em;
+  line-height: 1; /* This helps maintain proper vertical alignment */
+}
+
+.status-good {
+  color: #22c55e; /* green */
+}
+
+.status-bad {
+  color: #ef4444; /* red */
+}
+
+.log-message {
+  flex: 1;
+}
+
+p {
+  text-align: justify;
+}

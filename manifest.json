@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Repertoire Wizard",
-  "version": "1.3",
+  "version": "1.3.1",
   "description": "Brings together the best of Chessable and Lichess",
   "icons": {
     "128": "assets/wizardpawn128.png",
@@ -41,7 +41,7 @@
       "js": ["libs/browser-polyfill.js", "moveHighlighting.js"]
     },
     {
-      "matches": ["https://lichess.org/analysis*"],
+      "matches": ["https://lichess.org/analysis/*"],
       "js": ["libs/browser-polyfill.js", "positionSelector.js"]
     }
   ]
