@@ -46,6 +46,16 @@ const sliderLabel = document.getElementById("sliderLabel");
 sliderLabel.textContent = "11";
 const labelString = "Number of chapters to scrape at a time: ";
 
+const skipPaused = document.getElementById("skipPausedLines");
+browser.storage.sync.get("skipPaused").then((storage) => {
+  if (storage.skipPaused) {
+    skipPaused.checked = storage.skipPaused;
+  }
+});
+skipPaused.addEventListener("change", () => {
+  browser.storage.sync.set({ skipPaused: skipPaused.checked });
+});
+
 const titleHeader = document.getElementById("titleHeader");
 const titleContainer = document.getElementById("courseTitle");
 const courseInStorage = document.getElementById("courseInStorage");

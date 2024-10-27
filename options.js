@@ -17,6 +17,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   addInputListeners();
   initializeCourseData();
 
+  handleTabListeners();
+
   const params = new URLSearchParams(window.location.search);
   const tabId = params.get("tab");
   if (tabId) {
@@ -33,6 +35,27 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("clearLogs").addEventListener("click", clearLogs);
   await loadLogs();
 });
+
+function handleTabListeners() {
+  document.querySelectorAll(".nav-link").forEach((tab) => {
+    tab.addEventListener("click", (e) => {
+      e.preventDefault();
+      document
+        .querySelectorAll(".nav-link")
+        .forEach((t) => t.classList.remove("active"));
+      document
+        .querySelectorAll(".tab-pane")
+        .forEach((p) => p.classList.remove("show", "active"));
+      tab.classList.add("show", "active");
+      const pane = document.querySelector(tab.getAttribute("data-bs-target"));
+      console.log(pane);
+      console.log(tab.getAttribute("for"));
+      if (pane) {
+        pane.classList.add("show", "active");
+      }
+    });
+  });
+}
 
 function initializeCourseData() {
   browser.storage.local
@@ -71,10 +94,10 @@ async function loadLogs() {
 
       switch (log.status) {
         case "good":
-          status.textContent = "+ ";
+          status.innerHTML = "&check; ";
           break;
         case "bad":
-          status.textContent = "x ";
+          status.innerHTML = "&times; ";
           break;
       }
 
