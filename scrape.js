@@ -5,6 +5,26 @@ function getMovesFromChapter() {
   return pgnList;
 }
 
+function getUnpausedMovesFromChapter() {
+  const variationCards = document.getElementsByClassName("variation-card");
+  const pgnList = [];
+
+  for (card of variationCards) {
+    try {
+      if (card.querySelector('[class*="paused"]')) {
+        continue;
+      } else {
+        moves = card.getElementsByClassName("variation-card__moves")[0]
+          .textContent;
+        pgnList.push(moves);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  return pgnList;
+}
+
 function scrapeCoursePage() {
   let chapterList = [];
 
@@ -36,7 +56,11 @@ browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     sendResponse(urls);
     return true;
   } else if (request.method === "getMoves") {
-    sendResponse(getMovesFromChapter());
+    if (request.skipPaused) {
+      sendResponse(getUnpausedMovesFromChapter());
+    } else {
+      sendResponse(getMovesFromChapter());
+    }
   }
 });
 

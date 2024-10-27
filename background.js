@@ -142,7 +142,9 @@ async function scrapeNMissingChapters(coursePage, maxChapters = 11, signal) {
 
     try {
       let moves = await getMovesFromChapter(chapter.url);
+      console.log(moves);
       let fenDict = pgnListToFenDict(moves);
+      console.log(fenDict);
       metaData.allMoves.push(fenDict);
       metaData.lineCount += moves.length;
       metaData.scrapedChapters.push(chapter.url);
@@ -192,11 +194,15 @@ async function scrapeCoursePage() {
 }
 
 async function getMovesFromChapter(url, delay = 1000) {
+  const { skipPaused = false } = await browser.storage.sync.get("skipPaused");
   const tab = await browser.tabs.create({ url: url, active: false });
   try {
     await waitForTabLoad(tab.id);
     await new Promise((resolve) => setTimeout(resolve, delay));
-    const data = await browser.tabs.sendMessage(tab.id, { method: "getMoves" });
+    const data = await browser.tabs.sendMessage(tab.id, {
+      method: "getMoves",
+      skipPaused,
+    });
     return data;
   } catch (error) {
     console.error("Error in getMovesFromChapter: ", error);
@@ -308,8 +314,12 @@ function mergeDictList(dictList) {
 function pgnListToFenDict(pgnList) {
   let output = {};
   for (let pgn of pgnList) {
-    let fenDict = pgnToFenDict(pgn);
-    output = mergeDictsFaster(output, fenDict);
+    try {
+      let fenDict = pgnToFenDict(pgn);
+      output = mergeDictsFaster(output, fenDict);
+    } catch (error) {
+      continue;
+    }
   }
 
   return output;
