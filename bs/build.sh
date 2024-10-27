@@ -3,7 +3,7 @@
 set -e  # Exit immediately if a command exits with a non-zero status
 
 BUILD_DIR="build"
-BASE_NAME="RepertoireHelper"
+BASE_NAME="RepertoireWizard"
 IGNORE_FILE=".buildignore"
 
 mkdir -p "$BUILD_DIR"
