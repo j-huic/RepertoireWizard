@@ -90,10 +90,18 @@ html[data-bs-theme="dark"] .log-container {
   color: #ef4444; /* red */
 }
 
+.status-partial {
+  color: #ffa500;
+}
+
 .log-message {
   flex: 1;
 }
 
 p {
   text-align: justify;
+}
+
+ul li {
+  padding-bottom: 10px;
 }

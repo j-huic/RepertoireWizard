@@ -48,8 +48,6 @@ function handleTabListeners() {
         .forEach((p) => p.classList.remove("show", "active"));
       tab.classList.add("show", "active");
       const pane = document.querySelector(tab.getAttribute("data-bs-target"));
-      console.log(pane);
-      console.log(tab.getAttribute("for"));
       if (pane) {
         pane.classList.add("show", "active");
       }
@@ -87,7 +85,6 @@ async function loadLogs() {
     const message = document.createElement("span");
     message.className = "log-message";
 
-    // Add status indicator if specified
     if (log.status) {
       const status = document.createElement("span");
       status.className = `status-indicator status-${log.status}`;
@@ -99,12 +96,18 @@ async function loadLogs() {
         case "bad":
           status.innerHTML = "&times; ";
           break;
+        case "partial":
+          status.innerHTML = "&minus; ";
+          break;
+        case "neutral":
+          status.innerHTML = "";
+          break;
       }
 
       message.appendChild(status);
     }
 
-    if (log.url && log.linkText) {
+    if (log.url && log.title) {
       const parts = log.message.split("{link}");
 
       parts.forEach((part, index) => {
@@ -114,7 +117,7 @@ async function loadLogs() {
         if (index < parts.length - 1) {
           const link = document.createElement("a");
           link.href = log.url;
-          link.textContent = log.linkText;
+          link.textContent = log.title;
           link.target = "_blank";
           link.rel = "noopener noreferrer";
           message.appendChild(link);
@@ -504,7 +507,7 @@ function createRemoveColumn(key, width) {
         browser.runtime.sendMessage({ method: "courseRemoved", key: key });
         displayCourseDataOptions(Object.keys(courseData).sort());
       } catch (error) {
-        console.log("error removing course", error);
+        console.error("error removing course", error);
       }
     }
   });

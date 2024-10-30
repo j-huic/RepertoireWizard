@@ -52,7 +52,7 @@ var innerObserver = new MutationObserver((mutationList) => {
 });
 
 // removes wiki tab
-let observerStatic = new MutationObserver(function (mutations) {
+let observerStatic = new MutationObserver(function () {
   let wiki = document.getElementsByClassName("analyse__wiki empty")[0];
   if (wiki) {
     wiki.remove();
@@ -61,25 +61,28 @@ let observerStatic = new MutationObserver(function (mutations) {
 });
 
 // functions
+
 // top level function which checks and highlights explorer moves against course data for current position
 function highlightExplorerMoves() {
   fen = getFen();
   let tbody = document.getElementsByTagName("tbody")[0];
   let uniqueCourseMoves = new Set(moveRecommendationsFromFen(fen));
   if (tbody) {
-    for (let move of tbody.children) {
-      let moveText = move.getElementsByTagName("td")[0].textContent;
-      if (uniqueCourseMoves.has(moveText)) {
-        move.getElementsByTagName("td")[0].style.color = "red";
-        uniqueCourseMoves.delete(moveText);
+    try {
+      for (let move of tbody.children) {
+        let moveText = move.getElementsByTagName("td")[0].textContent;
+        if (uniqueCourseMoves.has(moveText)) {
+          move.getElementsByTagName("td")[0].style.color = "red";
+          uniqueCourseMoves.delete(moveText);
+        }
       }
-    }
-    if (uniqueCourseMoves.size > 0) {
-      for (let move of uniqueCourseMoves) {
-        moveCard = createMoveCard(move, fen);
-        tbody.appendChild(moveCard);
+      if (uniqueCourseMoves.size > 0) {
+        for (let move of uniqueCourseMoves) {
+          moveCard = createMoveCard(move, fen);
+          tbody.appendChild(moveCard);
+        }
       }
-    }
+    } catch {}
   }
 }
 
