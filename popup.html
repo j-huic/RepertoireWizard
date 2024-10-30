@@ -42,23 +42,9 @@
 
     <div class="border-top border-dark-grey"></div>
 
-    <div class="container">
-      <!-- prettier-ignore -->
-      <div class="collapse mt-2" id="scrapeInfoText">
-        <div class="card bg-darker-card card-body smaller-font">
-          Navigate to the starting page of the course you wish to scrape, and
-          press the start scraping button. For testing/robustness purposes, you
-          may choose to scrape fewer chapters at a time (resume the process by pressing again, or abort if necessary). <br> <br>
-          The extension will open and close the course chapters in an inactive tab one by one. This is necessary in order to scrape the line PGNs; the process may take a minute or two depending on the size of the course. Remain on the course page with the current window open for best results. 
-          <br> <br>
-          Once the number of chapters and lines scraped in the below section matches the complete course, press the Save button, after which the course should appear in the settings and be ready for the move highlighting (don't forget to toggle the relevant checkbox in the settings). 
-        </div>
-      </div>
-    </div>
-
-    <div class="container mt-3" id="courseInfoContainer">
+    <div class="container mt-2" id="courseInfoContainer">
       <h6 id="titleHeader" style="text-align: left"></h6>
-      <h6 id="courseTitle" class="mb-3"></h6>
+      <h6 id="courseTitle" class="mb-2"></h6>
       <div
         id="courseInStorage"
         class="alert alert-success align-items-center mt-2"
@@ -70,23 +56,49 @@
       </div>
     </div>
 
-    <div class="container" id="scrapeControls">
+    <!-- <div class="border-top border-dark-grey mb-2"></div> -->
+
+    <div class="container mb-2" id="scrapeControls">
       <div class="d-flex flex-column align-items-center mt-2 mb-2">
-        <h6>Number of chapters to scrape in one go:</h6>
-        <label for="rangeSlider" id="sliderLabel"></label>
-        <input
-          type="range"
-          class="form-range"
-          min="1"
-          max="11"
-          id="rangeSlider"
-          style="cursor: pointer"
-        />
-        <div class="align-self-start">
+        <div class="w-100 text-center" id="chapterSliderDiv">
+          <h6>Number of chapters to scrape:</h6>
+          <label for="chapterSlider" id="chapterSliderLabel"></label>
+          <input
+            type="range"
+            class="form-range"
+            min="1"
+            max="11"
+            id="chapterSlider"
+            style="cursor: pointer"
+          />
+        </div>
+        <div class="align-self-start mb-1 mt-1">
           <div>
             <input type="checkbox" id="skipPausedLines" />
             <label for="skipPausedLines">Skip Paused Lines</label>
           </div>
+          <div>
+            <input type="checkbox" id="parallelScrape" />
+            <label for="parallelScrape"
+              >Scrape multiple chapters in parallel</label
+            >
+          </div>
+        </div>
+        <div
+          class="w-100 text-center mt-2"
+          id="tabSliderDiv"
+          style="display: none"
+        >
+          <h6>Number of tabs per batch:</h6>
+          <label for="tabSlider" id="tabSliderLabel"></label>
+          <input
+            type="range"
+            class="form-range"
+            min="1"
+            max="10"
+            id="tabSlider"
+            style="cursor: pointer"
+          />
         </div>
         <button id="startButton" class="btn btn-secondary mt-2 w-100">
           Start Scraping
@@ -101,9 +113,9 @@
         </div>
       </div>
       <div>
-        <p id="progressText"></p>
-        <p id="moveProgress"></p>
-        <p id="statusUpdate"></p>
+        <span id="progressText" style="display: block"></span>
+        <span id="moveProgress" style="display: block"></span>
+        <span id="statusUpdate" style="display: block"></span>
       </div>
     </div>
 

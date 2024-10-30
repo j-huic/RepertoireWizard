@@ -76,13 +76,17 @@ html[data-bs-theme="light"] .header-icon {
   color: #999999;
 }
 
+html[data-bs-theme="light"] .header-icon:hover {
+  color: #585858;
+}
+
 /* Theme switch styles */
 .theme-switch {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 28px;
+  width: 44px;
+  height: 26px;
   margin: 0;
   position: relative;
   cursor: pointer;
@@ -114,7 +118,7 @@ html[data-bs-theme="light"] .header-icon {
 .sun-icon {
   margin-left: auto;
   opacity: 0;
-  color: #333;
+  color: #535353;
 }
 
 .moon-icon {
@@ -132,4 +136,10 @@ input:checked + .slider .sun-icon {
 
 input:checked + .slider .moon-icon {
   opacity: 0;
+}
+
+#progressText,
+#moveProgress,
+#statusUpdate {
+  padding: 0 !important;
 }

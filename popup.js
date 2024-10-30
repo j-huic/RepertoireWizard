@@ -1,6 +1,6 @@
-let theme;
-const htmlElement = document.documentElement;
+let intervalID;
 
+// icon header
 const settingsIcon = document.getElementById("settingsIcon");
 const infoIcon = document.getElementById("infoIcon");
 const logIcon = document.getElementById("logsIcon");
@@ -13,12 +13,15 @@ infoIcon.addEventListener("click", () => {
     url: browser.runtime.getURL("options.html?tab=info-tab"),
   });
 });
-
 logIcon.addEventListener("click", () => {
   browser.tabs.create({
     url: browser.runtime.getURL("options.html?tab=logs-tab"),
   });
 });
+
+// theme stuff
+let theme;
+const htmlElement = document.documentElement;
 
 const lightSwitch = document.getElementById("lightSwitch");
 const lightSlider = document.getElementById("lightSlider");
@@ -37,47 +40,38 @@ browser.storage.sync.get("theme").then((storage) => {
   }
 });
 
-const startButton = document.getElementById("startButton");
-const saveButton = document.getElementById("saveButton");
-const abortButton = document.getElementById("abortButton");
-
-const slider = document.getElementById("rangeSlider");
-const sliderLabel = document.getElementById("sliderLabel");
-sliderLabel.textContent = "11";
-const labelString = "Number of chapters to scrape at a time: ";
-
-const skipPaused = document.getElementById("skipPausedLines");
-browser.storage.sync.get("skipPaused").then((storage) => {
-  if (storage.skipPaused) {
-    skipPaused.checked = storage.skipPaused;
-  }
-});
-skipPaused.addEventListener("change", () => {
-  browser.storage.sync.set({ skipPaused: skipPaused.checked });
-});
-
-const titleHeader = document.getElementById("titleHeader");
-const titleContainer = document.getElementById("courseTitle");
-const courseInStorage = document.getElementById("courseInStorage");
-
-const scrapeControls = document.getElementById("scrapeControls");
-const progressText = document.getElementById("progressText");
-const moveProgress = document.getElementById("moveProgress");
-const statusUpdate = document.getElementById("statusUpdate");
-let intervalID;
-
-browser.runtime.sendMessage({ method: "getCoursePageInfo" }).then((info) => {
-  try {
-    populateProgressInfo(info);
-  } catch {}
-});
-
 lightSwitch.addEventListener("change", () => {
   theme = lightSwitch.checked ? "light" : "dark";
   htmlElement.setAttribute("data-bs-theme", theme);
   browser.runtime.sendMessage({ method: "theme", theme: theme });
   browser.storage.sync.set({ theme: lightSwitch.checked });
 });
+
+// button controls
+const startButton = document.getElementById("startButton");
+const saveButton = document.getElementById("saveButton");
+const abortButton = document.getElementById("abortButton");
+
+startButton.addEventListener("click", async () => {
+  browser.runtime.sendMessage({
+    method: "startScrape",
+    maxChapters: parseInt(slider.value),
+    maxTabs: parseInt(tabSlider.value),
+    parallel: parallelScrape.checked,
+  });
+});
+saveButton.addEventListener("click", () => {
+  browser.runtime.sendMessage({ method: "saveCourseData" });
+});
+abortButton.addEventListener("click", () => {
+  browser.runtime.sendMessage({ method: "abort" });
+  clearInterval(intervalID);
+});
+
+// chapter slider
+const slider = document.getElementById("chapterSlider");
+const sliderLabel = document.getElementById("chapterSliderLabel");
+sliderLabel.textContent = "11";
 
 browser.storage.sync.get("sliderValue").then((storage) => {
   if (storage.sliderValue) {
@@ -94,14 +88,73 @@ slider.addEventListener("input", () => {
   browser.storage.sync.set({ sliderValue });
 });
 
-startButton.addEventListener("click", async () => {
-  browser.runtime.sendMessage({ method: "startScrape", value: slider.value });
+// tab slider
+const tabSliderDiv = document.getElementById("tabSliderDiv");
+const tabSlider = document.getElementById("tabSlider");
+const tabSliderLabel = document.getElementById("tabSliderLabel");
+tabSliderLabel.textContent = "5";
+
+browser.storage.sync.get("tabSliderValue").then((storage) => {
+  if (storage.value) {
+    tabSlider.value = storage.tabSliderValue;
+  } else {
+    tabSlider.value = 5;
+  }
 });
-saveButton.addEventListener("click", () => {
-  browser.runtime.sendMessage({ method: "saveCourseData" });
+
+tabSlider.addEventListener("input", () => {
+  let tabSliderValue = tabSlider.value;
+  tabSliderLabel.textContent = tabSliderValue;
+  browser.storage.sync.set({ tabSliderValue });
 });
-abortButton.addEventListener("click", () => {
-  browser.runtime.sendMessage({ method: "abort" });
+
+// skip paused chapters checkbox
+const skipPaused = document.getElementById("skipPausedLines");
+
+browser.storage.sync.get("skipPaused").then((storage) => {
+  if (storage.skipPaused) {
+    skipPaused.checked = storage.skipPaused;
+  } else {
+    browser.storage.sync.set({ skipPaused: false });
+  }
+});
+
+skipPaused.addEventListener("change", () => {
+  browser.storage.sync.set({ skipPaused: skipPaused.checked });
+});
+
+// parallel scrape checkbox
+const parallelScrape = document.getElementById("parallelScrape");
+
+browser.storage.sync.get("parallelScrape").then((storage) => {
+  if (storage.parallelScrape) {
+    parallelScrape.checked = storage.parallelScrape;
+    tabSliderDiv.style.display = storage.parallelScrape ? "block" : "none";
+  } else {
+    browser.storage.sync.set({ parallelScrape: false });
+  }
+});
+
+parallelScrape.addEventListener("change", () => {
+  browser.storage.sync.set({ parallelScrape: parallelScrape.checked });
+  tabSliderDiv.style.display = parallelScrape.checked ? "block" : "none";
+});
+
+// course info
+const titleHeader = document.getElementById("titleHeader");
+const titleContainer = document.getElementById("courseTitle");
+const courseInStorage = document.getElementById("courseInStorage");
+
+// progress text
+const scrapeControls = document.getElementById("scrapeControls");
+const progressText = document.getElementById("progressText");
+const moveProgress = document.getElementById("moveProgress");
+const statusUpdate = document.getElementById("statusUpdate");
+
+browser.runtime.sendMessage({ method: "getCoursePageInfo" }).then((info) => {
+  try {
+    populateProgressInfo(info);
+  } catch {}
 });
 
 browser.runtime.onMessage.addListener((request) => {
@@ -113,18 +166,24 @@ browser.runtime.onMessage.addListener((request) => {
     } else if (request.info === "aborted") {
       clearInterval(intervalID);
       statusUpdate.textContent = "Scraping Aborted";
+    } else if (request.info === "over") {
+      clearInterval(intervalID);
+      statusUpdate.textContent = "Scraping Over";
     } else if (request.info === "complete") {
       clearInterval(intervalID);
       statusUpdate.textContent = "Scraping Complete";
     } else if (request.info === "partial") {
       clearInterval(intervalID);
       statusUpdate.textContent = "Partial Scraping Complete";
+    } else if (request.info === "nomoves") {
+      statusUpdate.textContent = "No Moves to Save";
+      clearInterval(intervalID);
     }
   }
 });
 
 function dotsMessage(element, message) {
-  let dots = ".";
+  let dots = "";
 
   element.textContent = message + dots;
   intervalID = setInterval(() => {
@@ -134,7 +193,7 @@ function dotsMessage(element, message) {
 }
 
 function cycleDots(dots) {
-  return ".".repeat((dots.length % 3) + 1);
+  return ".".repeat((dots.length + 1) % 4);
 }
 
 function populateProgressInfo(metaData) {
@@ -157,7 +216,7 @@ function populateProgressInfo(metaData) {
     }
   } else {
     titleHeader.textContent =
-      "Navigate to a Chessable course page to display info and controls";
+      "Navigate to a Chessable course page to display info and controls (may have to refresh the page)";
     scrapeControls.style.display = "none";
   }
 }
