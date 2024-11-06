@@ -1,8 +1,0 @@
-node_modules/
-build/
-templates/
-misc/
-fetch.js
-package.json
-package-lock.json
-scrape.js
