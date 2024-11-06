@@ -3,7 +3,7 @@ const inputVars = ["blacklist", "categories", "rename", "positions", "data"];
 
 document.addEventListener("DOMContentLoaded", async () => {
   let htmlElement = document.documentElement;
-  initialiseTheme();
+  initialiseTheme(htmlElement);
 
   browser.runtime.onMessage.addListener((request) => {
     if (request.method === "theme") {
@@ -141,7 +141,7 @@ async function clearLogs() {
   }
 }
 
-function initialiseTheme() {
+function initialiseTheme(htmlElement) {
   browser.storage.sync.get("theme").then((storage) => {
     if (storage.theme) {
       theme = "light";
