@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Repertoire Wizard",
-  "version": "1.4",
+  "version": "1.4.1",
   "description": "Brings together the best of Chessable and Lichess",
   "icons": {
     "128": "assets/wizardpawn128.png",
